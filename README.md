@@ -44,7 +44,6 @@ Preparing...
 
 * [React](http://www.reactjs.org) - The web framework used
 * [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
 
 ## Contributing
 
