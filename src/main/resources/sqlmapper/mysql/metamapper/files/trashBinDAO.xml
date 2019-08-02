@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="trashBinDAO">
+
+	<resultMap id="trashBinListMap" type="trashBinVO" >
+		<result property="fileId" column="file_id" javaType="long" />
+		<result property="storageId" column="storage_id" javaType="String" />
+		<result property="fileType" column="file_tp" javaType="String" />
+		<result property="path" column="path"  javaType="String" />
+		<result property="pathHash" column="path_hash"  javaType="String" />
+		<result property="parentId" column="parent_id"  javaType="long" />
+		<result property="name" column="name"  javaType="String" />
+		<result property="size" column="size"  javaType="long" />
+		<result property="searchTag" column="search_tag"  javaType="String" />
+		<result property="mimeType" column="mimetype"  javaType="String" />
+		<result property="shareId" column="share_id"  javaType="long" />
+		<result property="bookmarked" column="bookmarked"  javaType="String" />
+		<result property="createUserId" column="create_uid" javaType="String" />
+		<result property="createDate" column="create_dt"  />
+		<result property="modifyUserId" column="modify_uid" javaType="String" />
+		<result property="modifyDate" column="modify_dt"  />
+		<result property="displayModifyDate" column="displayModifyDate"  javaType="String" />
+		<result property="displayCreateDate" column="displayCreateDate"  javaType="String"/>
+		<result property="trashNo" column="trash_no" javaType="long" />
+		<result property="originalName" column="original_name" javaType="String" />
+		<result property="originalPath" column="original_path" javaType="String" />
+		<result property="deleteUid" column="delete_uid" javaType="String" />
+		<result property="deleteUserNm" column="delete_unm" />
+		<result property="deleteDate" column="delete_dt" />
+		<result property="displayDeleteDate" column="displayDeleteDate" javaType="String" />
+		<result property="timestamp" column="timestamp" javaType="String" />
+	</resultMap>
+
+	<sql id="include_SelectListResult">
+ 			  f.file_id
+			, f.storage_id
+			, f.file_tp
+			, f.path
+			, f.path_hash
+			, f.parent_id
+			, f.name
+			, f.size
+			, IFNULL(f.search_tag, '') AS search_tag
+			, f.mimetype
+			, f.create_uid
+			, f.create_dt
+			, f.modify_uid
+			, f.modify_dt
+			, DATE_FORMAT(f.modify_dt,'%Y-%m-%d %H:%i:%S') AS displayModifyDate
+			, DATE_FORMAT(f.create_dt,'%Y-%m-%d %H:%i:%S') AS displayCreateDate
+ 			, t.trash_no
+ 			, t.original_name
+			, t.original_path
+			, t.modify_uid AS delete_uid
+			, (SELECT emp_nm FROM rim_emp where emp_id = t.modify_uid) as delete_unm
+			, t.modify_dt AS delete_dt
+			, DATE_FORMAT(t.modify_dt,'%Y-%m-%d %H:%i:%S') AS displayDeleteDate
+			, t.timestamp
+	</sql>
+
+	<select id="selectTotalRows" resultType="int">
+        SELECT FOUND_ROWS() AS total
+    </select>
+
+    <select id="selectTotalRowsByParam" resultType="int">
+        SELECT COUNT(f.file_id) AS total
+			FROM rim_file_trash t
+			INNER JOIN rim_file f
+			ON t.file_id = f.file_id
+			WHERE f.storage_id =  #{param.storageId}
+
+			<if test="param.fromDate != null and param.toDate != null and param.fromDate != '' and param.toDate != ''">
+				AND  ( DATE(f.modify_dt) >= #{param.fromDate}
+				AND  #{param.toDate} >  DATE(f.modify_dt) )
+			</if>
+
+			<if test="param.searchId == 'Name' and param.searchText != null and param.searchText != ''">
+			   AND f.name LIKE CONCAT('%',#{param.searchText},'%')
+			</if>
+    </select>
+
+	<select id="selectList" parameterType="paramDaoVO" resultMap="trashBinListMap">
+		SELECT SQL_CALC_FOUND_ROWS A.* FROM (
+		 SELECT <include refid="include_SelectListResult"/>
+			FROM rim_file_trash t
+			INNER JOIN rim_file f
+			ON t.file_id = f.file_id
+			WHERE f.storage_id =  #{param.storageId}
+
+			<if test="param.fromDate != null and param.toDate != null and param.fromDate != '' and param.toDate != ''">
+				AND  ( DATE(f.modify_dt) >= #{param.fromDate}
+				AND  #{param.toDate} >  DATE(f.modify_dt) )
+			</if>
+
+			<if test="param.searchId == 'Name' and param.searchText != null and param.searchText != ''">
+			   AND f.name LIKE CONCAT('%',#{param.searchText},'%')
+			</if>
+
+			ORDER BY f.file_tp
+			<choose>
+				<when test="param.sortId == 'name' and param.sort != 'DESC'">
+				 , f.name
+				</when>
+				<when test="param.sortId == 'size'">
+				 , f.size
+				</when>
+				<when test="param.sortId == 'deleteDate'">
+				 , t.modify_dt
+				</when>
+				<otherwise>
+				 , f.name
+				</otherwise>
+			</choose>
+			<if test="param.sort == 'DESC'">
+			   DESC
+			</if>
+
+			) A
+			
+			<if test="param.limit != null and param.offset != null and param.limit != '' and param.offset != ''">
+				 LIMIT ${param.limit} OFFSET ${param.offset}
+			</if>
+	</select>
+
+	<select id="selectListByFileIds" parameterType="paramDaoVO" resultMap="trashBinListMap">
+		SELECT <include refid="include_SelectListResult"/>
+		FROM rim_file_trash t
+		INNER JOIN rim_file f
+		ON t.file_id = f.file_id
+		WHERE f.storage_id = #{param.storageId}
+		AND f.file_id IN
+			  <foreach item="fileId" index="index" collection="param.fileIds" open="(" separator="," close=")">
+			        #{fileId}
+			  </foreach>
+	</select>
+
+	<resultMap id="folderSubInfoMap" type="folderSubInfoVO" >
+		<result property="subDirCount" column="subDirCount" />
+		<result property="subFileCount" column="subFileCount"/>
+		<result property="size" column="size" />
+	</resultMap>
+
+	<select id="selectFolderSubInfo" parameterType="paramDaoVO" resultMap="folderSubInfoMap">
+		SELECT  IFNULL( MAX( if(file_tp = 'D', file_cnt, 0) ) , 0 ) AS subDirCount
+		       , IFNULL( MAX( if(file_tp = 'F', file_cnt, 0) ) , 0 )  AS subFileCount
+		       , IFNULL( ( SELECT SUM(size) FROM rim_file WHERE storage_id = #{param.storageId} AND path LIKE CONCAT(#{param.path}, '/%') ) ,0 )  AS size
+		FROM (
+			SELECT
+				  '1' type, f.file_tp, count(f.file_id) file_cnt
+			FROM rim_file_trash t
+			INNER JOIN rim_file f
+			ON t.file_id = f.file_id
+			WHERE f.storage_id=#{param.storageId}
+	        GROUP BY file_tp ) ta
+        GROUP BY type
+	</select>
+
+
+	<insert id="insertFileInfo" parameterType="paramDaoVO">
+		INSERT INTO rim_file_trash (
+  			file_id
+  			,original_name
+  			,original_path
+  			,modify_uid
+  			,modify_dt
+  			,`timestamp`
+		)
+		VALUES (
+			  #{param.fileId}
+			, #{param.originalName}
+			, #{param.originalPath}
+			, #{param.userId}
+			, now()
+			, #{param.timestamp}
+		)
+	</insert>
+
+	<update id="updateTrashFileInfoParent" parameterType="paramDaoVO">
+		UPDATE rim_file f
+		SET
+			  	path=CONCAT(#{param.targetPath}, '/', #{param.rename})
+				, path_hash=MD5(CONCAT(#{param.targetPath}, '/', #{param.rename}))
+				, name=#{param.rename}
+				, parent_id=( SELECT * FROM (SELECT file_id FROM rim_file
+		  					WHERE storage_id = #{param.storageId} AND path_hash=MD5(#{param.targetPath})) AS file )
+		WHERE storage_id=#{param.storageId}
+		AND   file_id=#{param.fileId}
+	</update>
+
+	<update id="updateTrashPathForSubFileByParentIdMove"  parameterType="paramDaoVO">
+		UPDATE rim_file f
+		SET
+				f.path =  fn_get_pathByfileid(file_id)
+			   	, f.path_hash = MD5(fn_get_pathByfileid(file_id))
+		WHERE f.storage_id=#{param.storageId}
+		    AND f.path like CONCAT(#{param.sourcePath},'/%')
+			AND fn_get_pathfileid(file_id) like CONCAT('%/',#{param.fileId},'/%')
+			AND f.file_id != #{param.fileId}
+	</update>
+
+
+	<delete id="deleteTrashByFileId" parameterType="paramDaoVO">
+		DELETE FROM rim_file_trash
+		WHERE file_id = ( SELECT file_id
+					FROM rim_file f
+		  			WHERE storage_id = #{param.storageId}
+		  				AND file_id = #{param.fileId} )
+	</delete>
+
+	<delete id="deleteTrashByStorageId" parameterType="paramDaoVO">
+		DELETE FROM rim_file_trash
+		WHERE file_id in ( SELECT file_id
+					FROM rim_file f
+		  			WHERE f.storage_id = #{param.storageId}
+		  				AND f.path like #{param.trashPath} )
+	</delete>
+
+	<delete id="deleteFileByFileId" parameterType="paramDaoVO">
+		DELETE FROM rim_file
+		WHERE storage_id = #{param.storageId}
+		  	AND file_id IN (SELECT * FROM (SELECT file_id FROM rim_file f,
+       							(SELECT path FROM rim_file
+         						WHERE storage_id = #{param.storageId}
+         						AND file_id = #{param.fileId}) AS in_file
+ 							WHERE f.path LIKE CONCAT(in_file.path, '%') 
+ 								AND storage_id = #{param.storageId} ) as sub_file);
+	</delete>
+
+	<delete id="deleteFileByTrashFilesFileId" parameterType="paramDaoVO">
+		DELETE FROM rim_file
+		WHERE storage_id = #{param.storageId}
+		  	AND file_id IN (SELECT * FROM (SELECT file_id FROM rim_file f,
+       							(SELECT path FROM rim_file
+         						WHERE storage_id = #{param.storageId}
+         						AND file_id = #{param.fileId}) AS in_file
+ 							WHERE f.path LIKE CONCAT(in_file.path, '/%')) as sub_file);
+	</delete>
+	
+</mapper>

@@ -1,0 +1,13 @@
+.fa-rim-tree{
+	color : #7DBDED;
+	font-size: 14px;
+}
+
+.jstree-default .jstree-open>.jstree-ocl {    
+    background-position: -100px -4px;
+    background-image: url("../../images/icon/treeview32px.png");
+}
+.jstree-default .jstree-closed>.jstree-ocl {
+    background-position: -132px -4px;
+    background-image: url("../../images/icon/treeview32px.png");
+}

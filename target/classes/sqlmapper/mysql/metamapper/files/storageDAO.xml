@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="storageDAO">
+
+	<cache eviction="FIFO" flushInterval="10000" size="1024" readOnly="true"/>
+
+	<resultMap id="storageMap" type="storageVO" >
+		<result property="storageId" column="storage_id" javaType="String" />
+		<result property="ownerId" column="owner_id" javaType="String" />
+		<result property="quota" column="quota" javaType="String" />
+		<result property="createDate" column="create_dt" javaType="Date" />
+		<result property="createUid" column="create_uid" javaType="String" />
+		<result property="modifyDate" column="modify_dt" javaType="Date" />
+		<result property="modifyUid" column="modify_uid" javaType="String" />
+		<result property="fileSize" column="fSize" javaType="long" />
+		<result property="trashSize" column="tSize" javaType="long" />
+		<result property="versionSize" column="vSize" javaType="long" />
+		<result property="usedSize" column="usedSize" javaType="long" />
+		<result property="freeSize" column="freeSize" javaType="long" />
+		<result property="usedPercent" column="usedPercent" javaType="int" />
+		<result property="filePercent" column="filePercent" javaType="int" />
+		<result property="trashPercent" column="trashPercent" javaType="int" />
+		<result property="versionPercent" column="versionPercent" javaType="int" />
+	</resultMap>
+
+	<select id="selectStorageInfo" parameterType="paramDaoVO" resultMap="storageMap" useCache="true" >
+		SELECT
+		  q.storage_id, owner_id, q.quota ,  q.create_dt,  q.create_uid,  q.modify_dt,  q.modify_uid ,
+		  ff_size AS fSize , tt_size AS tSize ,vv_size AS vSize,
+		  (ff_size+ tt_size+vv_size) AS usedSize,
+		  ( (q.quota * 1024*1024*1024) - (ff_size+ tt_size+vv_size) ) AS freeSize,
+		  ROUND( ( ( (ff_size+ tt_size+vv_size) / (q.quota * 1024*1024*1024) ) * 100 ) , 0 ) AS usedPercent,
+		  ROUND( ( (ff_size / (q.quota * 1024*1024*1024) ) * 100 ) , 0 ) AS filePercent,
+		  ROUND( ( (tt_size / (q.quota * 1024*1024*1024) ) * 100 ) , 0 ) AS trashPercent,
+		  ROUND( ( (vv_size / (q.quota * 1024*1024*1024) ) * 100 ) , 0 ) AS versionPercent
+		FROM
+		  rim_storage AS q,
+		  (
+		      SELECT storage_id, SUM(f_size) AS ff_size, SUM(t_size) AS tt_size, SUM(v_size) AS vv_size
+			  FROM
+			    (
+			      SELECT 'F' AS s_type, #{param.storageId} AS storage_id , 'F', 0 cnt, 0 AS f_size, 0 AS t_size, 0 AS v_size
+			      UNION ALL
+			      SELECT 'F' AS s_type, storage_id,  file_tp, COUNT(file_id) cnt, SUM(size) AS f_size, 0 AS t_size, 0 AS v_size
+			      FROM rim_file
+			      WHERE storage_id = #{param.storageId}
+			      AND path LIKE 'files/%'
+			      AND file_tp = 'F'
+			      GROUP BY storage_id,file_tp
+			      UNION ALL
+			      SELECT 'T' AS s_type, storage_id, file_tp, COUNT(file_id) cnt, 0 AS f_size, SUM(size) AS t_size, 0 AS v_size
+			      FROM rim_file
+			      WHERE storage_id =  #{param.storageId}
+			      AND path LIKE 'files_trashbin/%'
+			      AND file_tp = 'F'
+			      GROUP BY storage_id, file_tp
+			      UNION ALL
+			      SELECT 'V' AS s_type, storage_id, file_tp, COUNT(fv.file_id) cnt, 0 AS f_size, 0 AS t_size, SUM(fv.size) AS v_size
+			      FROM rim_file f, rim_file_version fv
+			      WHERE f.storage_id = #{param.storageId}
+			      AND f.file_id = fv.file_id
+			      AND file_tp = 'F'
+			      GROUP BY storage_id, file_tp
+			    ) use_info_type
+			  GROUP BY storage_id
+		  ) use_info
+		WHERE q.storage_id = use_info.storage_id
+		  AND q.storage_id =  #{param.storageId}
+
+    </select>
+
+	<select id="selectStorageId" parameterType="paramDaoVO" resultType="String" useCache="true" >
+	    SELECT storage_id
+		FROM rim_storage
+		WHERE owner_id = #{param.userId}
+    </select>
+
+
+</mapper>

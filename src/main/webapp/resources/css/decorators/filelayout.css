@@ -1,0 +1,193 @@
+.rim-actions .rim-btn-action{
+ 	margin-right: 5px;
+	font-family:  inherit;
+	font-size: inherit;
+	font-weight: inherit; 	
+	background-color: transparent;
+}
+.box {
+   margin-bottom: 0px;   
+}
+.listbox{
+  border-top: 1px solid #d2d6de;
+}
+.main-footer {
+	padding: 5px;
+}
+.content-header {    
+   padding: 15px 0 0 0;
+}
+.content {
+   padding: 0;
+
+}
+.content-wrapper,
+.right-side {
+    background-color: #ffffff;
+}
+.rim-tags{
+	 width: 0px;
+	 height: 0px;
+}
+.rim-search-tags{
+	 width: 0px;
+	 height: 0px;
+}
+.dragover 
+{
+	opacity:0.2;
+	filter: alpha(opacity=20);  
+}
+
+.popover-content{
+	font-family:  inherit;
+	font-size: inherit;
+}
+.editable-buttons {    
+    margin-left: 0;    
+}
+.editable-buttons .editable-submit {
+    height: 30px;
+    border-radius: 0;
+}
+.editable-click, a.editable-click, a.editable-click:hover {    
+    text-decoration: none;
+    border-bottom: solid 1px #ddd;
+}
+.editable-empty, .editable-empty:hover, .editable-empty:focus {
+    font-style: inherit;
+    color: inherit;
+    border-bottom: none;
+    text-decoration: none;
+}
+.editable-buttons .editable-cancel {
+    margin-left: 7px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-color: #f4f4f4;
+    height: 30px;
+}
+.popover-title {
+    font-size: 12px;
+    font-weight: bold;
+}
+.popover-content .box-weboffice .box-body .btn>img{
+	width: 40px;
+    height: 40px;
+}
+.popover-content {
+	margin-right: 5px;
+}
+.popover-content .weboffice-selected{
+    border-color: #337ab7;
+    border-radius: 2px;
+}
+.rim-detail-form .modal-dialog{
+	width: 300px;	
+}
+.JSTable .table{
+	height: 90%;
+	overflow-x: auto;
+	overflow-y: auto;
+}
+.JSTable .box-footer {
+    padding: 0px;
+}
+.JSTable .favorites{
+	cursor: pointer;
+}
+.JSTable .fa-star{
+	color: #ffd706;
+}
+.rim-table-files {
+}
+.rim-shareicon-overlay-top{
+	position: absolute;	
+	margin-top : 2px;
+	color: #E0BB59;
+	font-size: 12px;
+}
+.rim-shareicon-overlay-bottom{
+	position: absolute;	
+	margin-top : 12px;
+	color: #E0BB59;
+	font-size: 12px;
+
+}
+.rim-row-right-info{
+	font-size: 12px;
+}
+
+.box-version{
+	font-style: inherit;
+    border-radius: 0px;
+    border-top: 0px;
+    box-shadow: 0 0px 0px rgba(0,0,0,0.1);
+	
+}
+.box-version .box-header .box-title {    
+    font-size: 12px;
+}
+
+.box-detail{
+	font-style: inherit;
+    border-radius: 0px;
+    border-top: 0px;
+    box-shadow: 0 0px 0px rgba(0,0,0,0.1);
+}
+
+.rim-page-search .form-control,
+.rim-page-search .input-group-addon
+{
+    height: 25px;
+    padding: 2px 10px;   
+}
+.rim-page-search .input-group .input-group-addon {
+    border-radius: 0;
+    border-color: #f0f3f9;
+    background-color: #f0f3f9;
+    font-family: inherit;
+    font-size: inherit;   
+    font-weight: bold;
+}
+.rim-page-search select,
+.rim-page-search input{
+    font-family: inherit;
+    font-size: inherit;
+}
+
+
+.jsprogressview-content .box {
+	height: 400px;
+ 	overflow-x: hidden;
+	overflow-y: auto;
+    padding: 0;      
+}
+.jsprogressview-content .box table thead th {
+	text-align: center;   
+	color: black;
+	
+}
+.jsprogressview-content .box table tbody td {
+	text-align: center;  
+	color: black; 
+}
+.jsprogressview-content .box .progress {
+ 	position: relative;
+ 	height: 12px;
+ 	background-color : gray;
+}
+.jsprogressview-content .box .progress span {
+    position: absolute;
+    display: block;
+    width: 100%;
+    color: white;
+ }
+.jsprogressview-content .box .progress-bar{
+	font-family:  inherit;
+	font-size: inherit;
+	font-weight: inherit; 
+	font-size: 8px;
+    line-height: 12px;
+}

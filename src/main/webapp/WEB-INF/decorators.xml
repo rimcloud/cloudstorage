@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorators defaultdir="/WEB-INF/views/decorators">
+    <excludes>
+    	<pattern>/index.do</pattern> 
+        <pattern>/api/*</pattern>
+    </excludes>
+    
+    <decorator name="header" page="include/header.jsp" />
+    
+    <decorator name="footer" page="include/footer.jsp" />
+    
+    <decorator name="fileLayout" page="layout/filelayout.jsp" >        
+        <pattern>/page/files.do</pattern>
+    </decorator>
+    <decorator name="file_sidebar_menu" page="menu/sidebar_menu_file.jsp" />
+   
+    <decorator name="files_all" page="files/all.jsp" />
+    <decorator name="files_sharingin" page="files/sharingin.jsp" />
+    <decorator name="files_sharingout" page="files/sharingout.jsp" />
+    <decorator name="files_bookmark" page="files/bookmark.jsp" />
+    <decorator name="files_search" page="files/search.jsp" />
+    <decorator name="files_trashbin" page="files/trashbin.jsp" />
+        
+    <decorator name="popupLayout" page="layout/popuplayout.jsp" >        
+        <pattern>/page/popup.do</pattern>
+    </decorator>   
+    
+</decorators>

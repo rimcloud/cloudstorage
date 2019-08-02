@@ -1,0 +1,665 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="filesDAO">
+
+	<resultMap id="fileListMap" type="fileListVO" >
+		<result property="fileId" column="file_id" javaType="long" />
+		<result property="storageId" column="storage_id" javaType="String" />
+		<result property="fileType" column="file_tp" javaType="String" />
+		<result property="path" column="path" javaType="String" />
+		<result property="pathHash" column="path_hash" javaType="String" />
+		<result property="parentId" column="parent_id" javaType="long" />
+		<result property="name" column="name" javaType="String" />
+		<result property="size" column="size" javaType="long" />
+		<result property="searchTag" column="search_tag" javaType="String" />
+		<result property="mimeType" column="mimetype" javaType="String" />
+		<result property="shareTp" column="share_tp" javaType="String" />
+		<result property="bookmarked" column="bookmarked"  javaType="String" />
+		<result property="modifyUserId" column="modify_uid" />
+		<result property="createUserId" column="create_uid" />
+		<result property="modifyUserNm" column="modify_unm" />
+		<result property="createUserNm" column="create_unm" />
+		<result property="createDate" column="create_dt" />
+		<result property="displayCreateDate" column="displayCreateDate" javaType="String"/>
+		<result property="modifyDate" column="modify_dt" />
+		<result property="displayModifyDate" column="displayModifyDate" javaType="String" />
+		<result property="subFolderYn" column="subFolderYn" javaType="String" />
+	</resultMap>
+
+	<sql id="include_SelectListResult">
+		f.file_id
+		, f.storage_id
+		, f.file_tp
+		, f.path
+		, f.path_hash
+		, f.parent_id
+		, f.name
+		, f.size
+		, IFNULL(f.search_tag, '') AS search_tag
+		, f.mimetype
+		, f.create_uid
+		, f.create_dt
+		, f.modify_uid
+		, f.modify_dt
+		, (SELECT emp_nm FROM rim_emp where emp_id = f.modify_uid) as modify_unm
+		, (SELECT emp_nm FROM rim_emp where emp_id = f.create_uid) as create_unm
+		, DATE_FORMAT(f.modify_dt,'%Y-%m-%d %H:%i:%S') AS displayModifyDate
+		, DATE_FORMAT(f.create_dt,'%Y-%m-%d %H:%i:%S') AS displayCreateDate
+
+	</sql>
+
+	<sql id="include_SelectListShareCheck">
+		, IFNULL( ( SELECT GROUP_CONCAT(share_tp SEPARATOR '' ) FROM rim_share s
+		WHERE s.file_id = f.file_id
+		AND s.storage_id=f.storage_id), '') share_tp
+	</sql>
+
+	<select id="selectListAll" parameterType="paramDaoVO" resultMap="fileListMap">
+			SELECT
+				<include refid="include_SelectListResult"/>
+				, CASE
+				  	WHEN ( file_tp = 'D' )
+				  	THEN ( SELECT IF(COUNT(file_id) > 0, 'Y','N') FROM rim_file subinfo
+		                WHERE subinfo.storage_id = f.storage_id
+		                  AND subinfo.parent_id = f.file_id
+		                  AND subinfo.file_tp = 'D' )
+				  	ELSE 'N'
+				  END AS subFolderYn
+
+			FROM rim_file f
+			WHERE 1=1
+				AND f.storage_id=#{param.storageId}
+				AND f.path LIKE CONCAT(#{param.path}, '%' )
+			ORDER BY f.file_tp , f.path
+	</select>
+
+	<select id="selectList" parameterType="paramDaoVO" resultMap="fileListMap">
+	   SELECT SQL_CALC_FOUND_ROWS A.* FROM (
+			SELECT
+				<include refid="include_SelectListResult"/>
+				<include refid="include_SelectListShareCheck"/>
+				<choose>
+				<when test="param.userId != null" >
+					,( SELECT IF ( COUNT(file_id) > 0 , 'Y' , 'N' )
+					FROM rim_bookmark bmark
+					WHERE bmark.file_id = f.file_id AND bmark.user_id = #{param.userId} AND bmark.storage_id = #{param.storageId} ) AS bookmarked
+				</when>
+				<otherwise>
+					, 'N' AS bookmarked
+				</otherwise>
+				</choose>
+
+				, CASE
+				  	WHEN ( file_tp = 'D' )
+				  	THEN ( SELECT IF(COUNT(file_id) > 0, 'Y','N') FROM rim_file subinfo
+		                WHERE subinfo.storage_id = f.storage_id
+		                  AND subinfo.parent_id = f.file_id
+		                  AND subinfo.file_tp = 'D' )
+				  	ELSE 'N'
+				  END AS subFolderYn
+			FROM rim_file f
+			WHERE 1=1
+				AND f.storage_id=#{param.storageId}
+
+				<if test="param.fileTp != null and param.fileTp != ''">
+					AND f.file_tp = #{param.fileTp}
+				</if>
+
+				<choose>
+				<when test="param.fileId > 0" >
+					AND f.file_id=#{param.fileId}
+				</when>
+				<when test="param.parentId > 0" >
+					AND f.parent_id=#{param.parentId}
+				</when>
+				<when test="param.fileHash != null and param.fileHash != ''" >
+					AND f.parent_id = ( SELECT file_id FROM rim_file WHERE storage_id=#{param.storageId} and path_hash = #{param.pathHash} )
+				</when>
+				<otherwise>
+					AND f.parent_id = ( SELECT file_id FROM rim_file WHERE storage_id=#{param.storageId} and path_hash = MD5(#{param.path}) )
+				</otherwise>
+			</choose>
+
+			<if test="param.fromDate != null and param.toDate != null and param.fromDate != '' and param.toDate != ''">
+				AND  ( DATE(f.modify_dt) >= #{param.fromDate}
+				AND  #{param.toDate} >  DATE(f.modify_dt) )
+			</if>
+
+			<if test="param.searchId == 'Name' and param.searchText != null and param.searchText != ''">
+			   AND f.name LIKE CONCAT('%',#{param.searchText},'%')
+			</if>
+
+			ORDER BY f.file_tp
+			<choose>
+				<when test="param.sortId == 'name' and param.sort != 'DESC'">
+				 , f.name
+				</when>
+				<when test="param.sortId == 'size'">
+				 , f.size
+				</when>
+				<when test="param.sortId == 'modifyDate'">
+				 , f.modify_dt
+				</when>
+				<otherwise>
+				 , f.name
+				</otherwise>
+			</choose>
+			<if test="param.sort == 'DESC'">
+			   DESC
+			</if>
+
+		) A
+		<if test="param.limit != null and param.offset != null and param.limit != '' and param.offset != ''">
+			 LIMIT ${param.limit} OFFSET ${param.offset}
+		</if>
+
+	</select>
+	
+	<select id="selectFolderListAll" parameterType="paramDaoVO" resultMap="fileListMap">
+	   SELECT SQL_CALC_FOUND_ROWS A.* FROM (
+			SELECT
+				<include refid="include_SelectListResult"/>
+				<include refid="include_SelectListShareCheck"/>
+				<choose>
+				<when test="param.userId != null" >
+					,( SELECT IF ( COUNT(file_id) > 0 , 'Y' , 'N' )
+					FROM rim_bookmark bmark
+					WHERE bmark.file_id = f.file_id AND bmark.user_id = #{param.userId} AND bmark.storage_id = #{param.storageId} ) AS bookmarked
+				</when>
+				<otherwise>
+					, 'N' AS bookmarked
+				</otherwise>
+				</choose>
+
+				, CASE
+				  	WHEN ( file_tp = 'D' )
+				  	THEN ( SELECT IF(COUNT(file_id) > 0, 'Y','N') FROM rim_file subinfo
+		                WHERE subinfo.storage_id = f.storage_id
+		                  AND subinfo.parent_id = f.file_id
+		                  AND subinfo.file_tp = 'D' )
+				  	ELSE 'N'
+				  END AS subFolderYn
+			FROM rim_file f
+			WHERE 1=1
+				AND f.storage_id=#{param.storageId}
+					AND f.file_tp = 'D'
+					AND f.path not like '/'
+            		AND f.path not like 'files'
+            		AND f.path not like 'files_trashbin%'
+
+			<if test="param.fromDate != null and param.toDate != null and param.fromDate != '' and param.toDate != ''">
+				AND  ( DATE(f.modify_dt) >= #{param.fromDate}
+				AND  #{param.toDate} >  DATE(f.modify_dt) )
+			</if>
+
+			<if test="param.searchId == 'Name' and param.searchText != null and param.searchText != ''">
+			   AND f.name LIKE CONCAT('%',#{param.searchText},'%')
+			</if>
+
+			ORDER BY f.file_tp
+			<choose>
+				<when test="param.sortId == 'path'">
+				 , f.path
+				</when>
+				<when test="param.sortId == 'name' and param.sort != 'DESC'">
+				 , f.name
+				</when>
+				<when test="param.sortId == 'size'">
+				 , f.size
+				</when>
+				<when test="param.sortId == 'modifyDate'">
+				 , f.modify_dt
+				</when>
+				<otherwise>
+				 , f.path
+				</otherwise>
+			</choose>
+			<if test="param.sort == 'DESC'">
+			   DESC
+			</if>
+
+		) A
+		<if test="param.limit != null and param.offset != null and param.limit != '' and param.offset != ''">
+			 LIMIT ${param.limit} OFFSET ${param.offset}
+		</if>
+
+	</select>
+	
+	<select id="selectListTotalRows" parameterType="paramDaoVO" resultType="int">
+			SELECT COUNT(1) AS total
+			FROM rim_file f
+			WHERE 1=1
+				AND f.storage_id=#{param.storageId}
+
+				<if test="param.fileTp != null and param.fileTp != ''">
+					AND f.file_tp = #{param.fileTp}
+				</if>
+
+				<choose>
+				<when test="param.fileId > 0" >
+					AND f.file_id=#{param.fileId}
+				</when>
+				<when test="param.parentId > 0" >
+					AND f.parent_id=#{param.parentId}
+				</when>
+				<when test="param.fileHash != null and param.fileHash != ''" >
+					AND f.parent_id = ( SELECT file_id FROM rim_file WHERE storage_id=#{param.storageId} and path_hash = #{param.pathHash} )
+				</when>
+				<otherwise>
+					AND f.parent_id = ( SELECT file_id FROM rim_file WHERE storage_id=#{param.storageId} and path_hash = MD5(#{param.path}) )
+				</otherwise>
+			</choose>
+
+			<if test="param.fromDate != null and param.toDate != null and param.fromDate != '' and param.toDate != ''">
+				AND  ( DATE(f.modify_dt) >= #{param.fromDate}
+				AND  #{param.toDate} >  DATE(f.modify_dt) )
+			</if>
+
+			<if test="param.searchId == 'Name' and param.searchText != null and param.searchText != ''">
+			   AND f.name LIKE CONCAT('%',#{param.searchText},'%')
+			</if>
+
+			ORDER BY f.file_tp
+			<choose>
+				<when test="param.sortId == 'name' and param.sort != 'DESC'">
+				 , f.name
+				</when>
+				<when test="param.sortId == 'size'">
+				 , f.size
+				</when>
+				<when test="param.sortId == 'modifyDate'">
+				 , f.modify_dt
+				</when>
+				<otherwise>
+				 , f.name
+				</otherwise>
+			</choose>
+			<if test="param.sort == 'DESC'">
+			   DESC
+			</if>
+	</select>
+	
+
+	<select id="selectTotalRows" resultType="int">
+		SELECT FOUND_ROWS() AS total
+	</select>
+
+	<select id="selectFileInfo" parameterType="paramDaoVO" resultMap="fileListMap">
+		SELECT
+			<include refid="include_SelectListResult"/>
+			<include refid="include_SelectListShareCheck"/>
+
+			<choose>
+				<when test="param.userId != null" >
+					,( SELECT IF ( COUNT(file_id) > 0 , 'Y' , 'N' )
+					FROM rim_bookmark bmark
+					WHERE bmark.file_id = f.file_id AND bmark.user_id = #{param.userId} AND bmark.storage_id = #{param.storageId} ) AS bookmarked
+				</when>
+				<otherwise>
+					, 'N' AS bookmarked
+				</otherwise>
+			</choose>
+				, CASE
+				  	WHEN ( file_tp = 'D' )
+				  	THEN ( SELECT IF(COUNT(file_id) > 0, 'Y','N') FROM rim_file subinfo
+		                WHERE subinfo.storage_id = f.storage_id
+		                  AND subinfo.parent_id = f.file_id
+		                  AND subinfo.file_tp = 'D' )
+				  	ELSE 'N'
+				  END AS subFolderYn
+		FROM rim_file f
+		WHERE 1=1
+			AND f.storage_id=#{param.storageId}
+		<choose>
+			<when test="param.fileId > 0" >
+			AND f.file_id=#{param.fileId}
+			</when>
+			<when test="param.pathHash != null" >
+			AND f.path_hash=#{param.pathHash}
+			</when>
+			<otherwise>
+			AND f.path_hash=MD5(#{param.path})
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="selectFileInfoIgnoreCase" parameterType="paramDaoVO" resultMap="fileListMap">
+		SELECT
+			<include refid="include_SelectListResult"/>
+			<include refid="include_SelectListShareCheck"/>
+			<choose>
+				<when test="param.userId != null" >
+					,( SELECT IF ( COUNT(file_id) > 0 , 'Y' , 'N' )
+					FROM rim_bookmark bmark
+					WHERE bmark.file_id = f.file_id AND bmark.user_id = #{param.userId} AND bmark.storage_id = #{param.storageId} ) AS bookmarked
+				</when>
+				<otherwise>
+					, 'N' AS bookmarked
+				</otherwise>
+			</choose>
+		FROM rim_file f
+		WHERE 1=1
+			AND f.storage_id=#{param.storageId}
+		<choose>
+			<when test="param.fileId > 0" >
+			AND f.file_id=#{param.fileId}
+			</when>
+			<when test="param.pathHash != null" >
+			AND f.path_hash=#{param.pathHash}
+			</when>
+			<otherwise>
+			AND MD5(LOWER(f.path))=MD5(LOWER(#{param.path}))
+			</otherwise>
+		</choose>
+	</select>
+
+ 	<resultMap id="filePathMap" type="folderInfoVO" >
+		<result property="storageId" column="storage_id" javaType="String" />
+		<result property="fileId" column="file_id" javaType="long" />
+		<result property="name" column="name"  javaType="String" />
+		<result property="path" column="path"  javaType="String" />
+		<result property="pathHash" column="path_hash"  javaType="String" />
+		<result property="permissions" column="permissions" javaType="String" />
+		<result property="originName" column="f_name"  javaType="String" />
+		<result property="originPath" column="f_path"  javaType="String" />
+	</resultMap>
+
+	<select id="selectFolderInfo" parameterType="paramDaoVO" resultMap="filePathMap">
+		SELECT  f.storage_id, f.file_id, f.name , f.path , f.path_hash ,  f.name AS f_name, f.path AS f_path , 'W' AS permissions
+		FROM rim_file f
+		WHERE 1=1
+			AND f.storage_id=#{param.storageId}
+			<choose>
+			<when test="param.fileId > 0" >
+			AND f.file_id=#{param.fileId}
+			</when>
+			<when test="param.pathHash != null" >
+			AND f.path_hash=#{param.pathHash}
+			</when>
+			<otherwise>
+			AND f.path_hash=MD5(#{param.path})
+			</otherwise>
+		</choose>
+	</select>
+
+	<resultMap id="folderSubInfoMap" type="folderSubInfoVO" >
+		<result property="subDirCount" column="subDirCount" />
+		<result property="subFileCount" column="subFileCount"/>
+		<result property="size" column="size" />
+	</resultMap>
+
+	<select id="selectFolderSubInfo" parameterType="paramDaoVO" resultMap="folderSubInfoMap">
+		SELECT   IFNULL( MAX( if(file_tp = 'D', file_cnt, 0) ) , 0 ) AS subDirCount
+		       , IFNULL( MAX( if(file_tp = 'F', file_cnt, 0) ) , 0 )  AS subFileCount
+		       , IFNULL( ( SELECT SUM(size) FROM rim_file WHERE storage_id = #{param.storageId} AND path LIKE CONCAT(#{param.path}, '/%') ) ,0 )  AS size
+		FROM (
+		  SELECT '1' AS type, file_tp, count(file_id) file_cnt
+		    FROM rim_file f
+		   WHERE f.storage_id = #{param.storageId}
+		     AND f.parent_id = ( SELECT file_id FROM rim_file WHERE storage_id = #{param.storageId} AND  path_hash = MD5(#{param.path}) )
+		  GROUP BY file_tp
+		) ta
+		GROUP BY type
+	</select>
+	
+	<select id="selectFolderSubInfoAll" parameterType="paramDaoVO" resultMap="folderSubInfoMap">
+		SELECT IFNULL( MAX( if(file_tp = 'D', file_cnt, 0) ) , 0 ) AS subDirCount 
+		     , IFNULL( MAX( if(file_tp = 'F', file_cnt, 0) ) , 0 ) AS subFileCount 
+		     , IFNULL( ( SELECT SUM(size) FROM rim_file WHERE storage_id = #{param.storageId} AND path LIKE CONCAT(#{param.path}, '/%') ) ,0 ) AS size 
+		FROM ( 
+		   SELECT 
+		     '1' AS type, f.file_tp, count(f.file_id) file_cnt FROM rim_file f 
+		     WHERE f.storage_id = #{param.storageId} AND f.path LIKE CONCAT(#{param.path}, '/%')   GROUP BY file_tp 
+		) ta 
+		GROUP BY type 
+	</select>
+
+	<update id="updateFileName" parameterType="fileVO">
+		UPDATE rim_file f
+		SET
+			f.name=#{param.name}
+			, f.path=#{param.path}
+			, f.path_hash=MD5(#{param.path})
+		WHERE f.storage_id=#{param.storageId}
+			AND f.file_id=#{param.fileId}
+	</update>
+
+	<update id="updatePathForSubFileByParentId_20190510" parameterType="paramDaoVO">
+		UPDATE rim_file f
+		SET
+			f.path =  fn_get_pathByfileid(file_id)
+			, f.path_hash = MD5(fn_get_pathByfileid(file_id))
+		WHERE f.storage_id = #{param.storageId}
+			AND fn_get_pathfileid(file_id) like CONCAT('%/',#{param.fileId},'/%')
+			AND f.file_id != #{param.fileId}
+	</update>
+	
+	<update id="updatePathForSubFileByParentId" parameterType="paramDaoVO">
+		UPDATE rim_file f, (SELECT path FROM rim_file
+							 WHERE storage_id = #{param.storageId}
+							   AND file_tp = 'D'
+							   AND file_id = #{param.fileId} ) homedir,
+						   (SELECT storage_id, file_id, path
+							  FROM rim_file
+							 WHERE storage_id = #{param.storageId}
+							   AND file_tp = 'D'
+							   AND file_id = #{param.fileId}
+							UNION
+							SELECT storage_id, file_id, path
+							  FROM rim_file
+							 WHERE storage_id = #{param.storageId}
+							   AND file_tp = 'D'
+							   AND path like CONCAT(#{param.oldPath},'/%') ) dir
+		SET
+			f.path = REPLACE(f.path, #{param.oldPath}, homedir.path)
+			, f.path_hash = MD5(REPLACE(f.path, #{param.oldPath}, homedir.path))
+		WHERE f.storage_id = dir.storage_id
+			AND f.parent_id = dir.file_id
+			AND f.storage_id = #{param.storageId}
+			AND f.file_id != #{param.fileId}
+	</update>
+
+	<update id="updatePathForSubFileByParentId_todo" parameterType="paramDaoVO">
+		UPDATE rim_file f
+		SET
+			f.path = REPLACE(path, #{param.oldPath}, #{param.path})
+			, f.path_hash = MD5(REPLACE(path, #{param.oldPath}, #{param.path}))
+		WHERE f.storage_id = #{param.storageId}
+			AND f.path like CONCAT(#{param.oldPath},'/%')
+			AND f.file_id != #{param.fileId}
+	</update>
+
+	<insert id="insertFileInfo" parameterType="paramDaoVO" >
+		INSERT INTO rim_file (
+			 storage_id
+			,file_tp
+			,path
+			,path_hash
+			,parent_id
+			,name
+			,size
+			,search_tag
+			,mimetype
+			,create_uid ,create_dt ,modify_uid ,modify_dt
+		)
+		VALUES (
+			 #{param.storageId}
+			, #{param.fileType}
+			, #{param.path}
+			, MD5(#{param.path})
+			, #{param.parentId}
+			, #{param.name}
+			, #{param.size}
+			, #{param.searchTag}
+			, #{param.mimeType}
+			, #{param.createUserId}, now(), #{param.modifyUserId}, now()
+		)
+	</insert>
+
+	<select id="selectFileListByFileIds" parameterType="paramDaoVO" resultMap="fileListMap">
+		SELECT <include refid="include_SelectListResult"/>
+		  FROM rim_file f
+		 WHERE f.storage_id = #{param.storageId}
+		<if test="param.parentId > 0" >
+		   AND f.parent_id = #{param.parentId}
+		</if>
+ 		   AND file_id IN
+				<foreach item="fileId" index="index" collection="param.fileIds" open="(" separator="," close=")">
+					#{fileId}
+				</foreach>
+	</select>
+
+	<select id="selectFileListByPaths" parameterType="paramDaoVO" resultMap="fileListMap">
+		SELECT <include refid="include_SelectListResult"/>
+		FROM rim_file f
+		WHERE f.storage_id = #{param.storageId}
+		  AND f.path_hash IN
+			<foreach item="path" index="index" collection="param.paths" open="(" separator="," close=")">
+				MD5(#{path})
+			</foreach>
+	</select>
+
+	<select id="selectInfoExistFileByName" parameterType="paramDaoVO" resultMap="fileListMap">
+		SELECT <include refid="include_SelectListResult"/>
+		FROM rim_file f
+		WHERE f.storage_id = #{param.storageId}
+			AND f.parent_id = (SELECT file_id FROM rim_file in_f WHERE in_f.storage_id = #{param.storageId} AND path_hash = MD5(#{param.targetPath}))
+			AND LOWER(name) = LOWER(#{param.name})
+	</select>
+
+	<select id="selectListExistFileByFileIds" parameterType="paramDaoVO" resultMap="fileListMap">
+		SELECT <include refid="include_SelectListResult"/>
+		FROM rim_file f
+		WHERE f.storage_id = #{param.targetStorageId}
+			AND f.parent_id = (SELECT file_id FROM rim_file in_f WHERE in_f.storage_id = #{param.targetStorageId} AND path_hash = MD5(#{param.targetPath}))
+			AND name IN
+				( SELECT name FROM rim_file WHERE storage_id = #{param.sourceStorageId} AND file_id IN
+				<foreach item="fileId" index="index" collection="param.fileIds" open="(" separator="," close=")">
+					#{fileId}
+				</foreach>
+				)
+	</select>
+
+	<select id="selectFileIdByNameIgnoreCase" parameterType="paramDaoVO" resultType="long">
+		SELECT file_id as fileId
+		FROM rim_file f
+		WHERE f.storage_id = #{param.storageId}
+		  AND MD5(LOWER(f.path))=MD5(LOWER(#{param.path}))
+	</select>
+
+	<update id="updateFileInfoParent" parameterType="paramDaoVO">
+		UPDATE rim_file f
+		SET
+			path=CONCAT(#{param.targetPath}, '/', f.name)
+			, path_hash=MD5(CONCAT(#{param.targetPath}, '/', f.name))
+			, parent_id = ( SELECT * FROM (SELECT file_id FROM rim_file
+							WHERE storage_id = #{param.sourceStorageId}
+								AND path_hash=MD5(#{param.targetPath})) AS file )
+		WHERE storage_id=#{param.sourceStorageId}
+		AND   file_id=#{param.fileId}
+	</update>
+
+	<update id="updatePathForSubFileByParentIdMove"  parameterType="paramDaoVO">
+		UPDATE rim_file f
+		SET
+			f.path = fn_get_pathByfileid(file_id)
+			, f.path_hash = MD5(fn_get_pathByfileid(file_id))
+		WHERE f.storage_id=#{param.sourceStorageId}
+		    AND f.path like CONCAT(#{param.sourcePath},'/%')
+			AND fn_get_pathfileid(file_id) like CONCAT('%/',#{param.fileId},'/%')
+			AND f.file_id != #{param.fileId}
+	</update>
+	
+	<update id="updateRenameFileInfoParent" parameterType="paramDaoVO">
+		UPDATE rim_file f
+		SET
+			name=#{param.reName}
+			, path=CONCAT(#{param.targetPath}, '/', #{param.reName})
+			, path_hash=MD5(CONCAT(#{param.targetPath}, '/', #{param.reName}))
+			, parent_id = ( SELECT * FROM (SELECT file_id FROM rim_file
+							WHERE storage_id = #{param.sourceStorageId}
+								AND path_hash=MD5(#{param.targetPath})) AS file )
+		WHERE storage_id=#{param.sourceStorageId}
+		AND   file_id=#{param.fileId}
+	</update>
+
+	<insert id="insertCopyIncloudSubFile" parameterType="paramDaoVO">
+		INSERT INTO rim_file (
+			 storage_id
+			,file_tp
+			,path
+			,path_hash
+			,parent_id
+			,name
+			,size
+			,mimetype
+			,create_uid ,create_dt ,modify_uid ,modify_dt
+		)
+		SELECT
+			#{param.targetStorageId}
+			, file_tp
+			, CONCAT( #{param.targetPath} ,  substring(path, char_length(#{param.sourcePath})+1 ) ) AS path
+			, MD5(CONCAT( #{param.targetPath} ,  substring(path, char_length(#{param.sourcePath})+1 ) )) AS path_hash
+			, #{param.fileId} AS parent
+			<choose>
+				<when test="param.fileNm != null"> , #{param.fileNm} </when>
+				<otherwise> , name </otherwise>
+			</choose>
+			, size
+			, mimetype
+			, #{param.modifyUserId}, now(), #{param.modifyUserId}, now()
+		FROM rim_file f
+		WHERE f.storage_id=#{param.sourceStorageId}
+			AND (
+				f.path like CONCAT((SELECT path FROM rim_file WHERE storage_id=#{param.sourceStorageId} AND file_id=#{param.fileId}),'/%')
+				OR f.file_id=#{param.fileId}
+			)
+		ORDER BY path
+	</insert>
+
+	<update id="updateParentIdByPathForCopy" parameterType="paramDaoVO">
+		UPDATE rim_file f
+		SET
+			parent_id=fn_get_parentIdByPathWithName(storage_id, path, name)
+		WHERE f.storage_id=#{param.targetStorageId}
+			AND f.path like CONCAT(#{param.targetPath},'/%')
+			AND f.parent_id=#{param.fileId}
+	</update>
+
+	<delete id="deleteFileByFileId" parameterType="paramDaoVO">
+		DELETE FROM rim_file
+		WHERE storage_id = #{param.storageId}
+			AND file_id IN (SELECT * FROM (SELECT file_id FROM rim_file f,
+								(SELECT path FROM rim_file
+								WHERE storage_id = #{param.storageId}
+								AND file_id = #{param.fileId}) AS in_file
+ 							WHERE f.path LIKE CONCAT(in_file.path, '%')) as sub_file)
+	</delete>
+	
+	<update id="updateFileInfoSize" parameterType="paramDaoVO">
+		UPDATE rim_file f
+		SET
+			f.size= #{param.size}
+			, f.mimeType = #{param.mimeType}
+			, f.modify_dt = now()
+			, f.modify_uid = #{param.modifyUserId}
+		WHERE f.storage_id=#{param.storageId}
+		  AND f.file_id=#{param.fileId}
+	</update>
+
+	<update id="updateFileInfo" parameterType="fileVO">
+		UPDATE rim_file f
+		SET
+		    f.size= #{param.size}
+			, f.mimeType = #{param.mimeType}
+			, f.modify_dt = now()
+			, f.modify_uid = #{param.modifyUserId}
+			, f.name=#{param.name}
+			, f.path=#{param.path}
+			, f.path_hash=MD5(#{param.path})
+		WHERE f.storage_id=#{param.storageId}
+			AND f.file_id=#{param.fileId}
+	</update>
+	
+</mapper>

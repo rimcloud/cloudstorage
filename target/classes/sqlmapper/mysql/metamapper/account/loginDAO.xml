@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="loginDAO">
+
+	<resultMap id="loginMap" type="loginVO" >
+		<result property="userId" column="user_id" javaType="String" />
+		<result property="displayNm" column="display_nm" javaType="String" />
+	</resultMap>
+
+	<select id="selectCheckLogin" parameterType="paramDaoVO" resultMap="loginMap">
+	    SELECT u.user_id, u.display_nm
+		  FROM rim_user u, rim_emp e
+		 WHERE u.user_id = e.emp_id
+		   AND e.login_id = #{param.userId}
+           AND u.passwd = fc_pwd_hash(#{param.password})
+           AND e.hlofc_yn = 'Y'
+           AND e.cloud_allow_yn = 'Y'
+    </select>
+
+    <resultMap id="loginInfoMap" type="sessionVO" >
+		<result property="userId" column="user_id" javaType="String" />
+		<result property="userNm" column="display_nm" javaType="String" />
+		<result property="deptCd" column="dept_cd" javaType="String" />
+		<result property="storageId" column="storage_id" javaType="String" />
+	</resultMap>
+
+    <select id="selectUserLoginInfo" parameterType="paramDaoVO" resultMap="loginInfoMap">
+	    SELECT u.user_id, u.display_nm , e.dept_cd
+             , ( SELECT max(storage_id) FROM rim_storage s WHERE s.owner_id = u.user_id ) AS storage_id
+		  FROM rim_user u, rim_emp e, rim_dept d
+		 WHERE u.user_id = e.emp_id
+		   AND e.dept_cd = d.dept_cd
+	       AND e.login_id = #{param.userId}
+	       AND e.hlofc_yn = 'Y'
+	       AND e.cloud_allow_yn = 'Y'
+    </select>
+    
+    <select id="selectUserId" parameterType="paramDaoVO" resultMap="loginInfoMap">
+	    SELECT e.login_id, e.dept_cd
+		  FROM rim_emp e, rim_dept d
+		 WHERE e.dept_cd = d.dept_cd
+	       AND e.login_id = #{param.userId}
+	       AND e.hlofc_yn = 'Y'
+	       AND e.cloud_allow_yn = 'Y'
+    </select>
+
+
+	<resultMap id="loginEmpInfoMap" type="loginEmpVO" >
+		<result property="empId" column="emp_id" javaType="String" />
+		<result property="loginId" column="login_id" javaType="String" />
+		<result property="userNm" column="emp_nm" javaType="String" />
+		<result property="deptCd" column="dept_cd" javaType="String" />
+		<result property="grade" column="grade" javaType="String" />
+		<result property="cloudAllowYn" column="cloud_allow_yn" javaType="String" />
+		<result property="deptNm" column="dept_nm" javaType="String" />
+		<result property="whleDeptCd" column="whle_dept_cd" javaType="String" />
+		<result property="whleDeptNm" column="whle_dept_nm" javaType="String" />
+	</resultMap>
+
+    <select id="selectEmpLoginInfo" parameterType="paramDaoVO" resultMap="loginEmpInfoMap">
+    	SELECT e.emp_id, e.login_id, e.emp_nm, e.grade, e.hlofc_yn, e.cloud_allow_yn, d.dept_cd, d.dept_nm, d.whle_dept_cd
+		FROM rim_emp e, rim_dept d
+		WHERE e.dept_cd = d.dept_cd and e.emp_nm like #{param.empNm}
+    </select>
+
+</mapper>

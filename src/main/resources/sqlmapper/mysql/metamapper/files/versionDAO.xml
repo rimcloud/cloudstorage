@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="versionDAO">
+
+	<resultMap id="versionListMap" type="versionVO" >
+		<result property="versionNo" column="version_no" javaType="long" />
+		<result property="fileId" column="file_id" javaType="long" />
+		<result property="name" column="name" javaType="String" />
+		<result property="path" column="path" javaType="String" />
+		<result property="size" column="size" javaType="long" />
+		<result property="mimeType" column="mimetype" javaType="String" />
+		<result property="createUserId" column="create_uid" javaType="String" />
+		<result property="createUserName" column="create_nm" javaType="String" />
+		<result property="createDate" column="create_dt" javaType="Date" />
+		<result property="displayCreateDate" column="displayCreateDate"  javaType="String"/>
+	</resultMap>
+
+	<sql id="include_versionResult">
+ 			  v.version_no
+ 			, v.file_id
+ 			, v.name
+			, v.path
+			, v.size
+			, v.mimetype
+			, v.create_uid
+			, u.display_nm AS create_nm
+			, v.create_dt
+			, DATE_FORMAT(v.create_dt,'%Y-%m-%d %H:%i:%S') AS displayCreateDate
+	</sql>
+
+	<select id="selectList" parameterType="paramDaoVO" resultMap="versionListMap">
+		SELECT
+			<include refid="include_versionResult"/>
+		FROM rim_file_version AS v, rim_user AS u
+		WHERE u.user_id = v.create_uid
+			<if test="param.fileId != null">
+				AND v.file_id = #{param.fileId}
+			</if>
+			<if test="param.versionNo != null">
+				AND v.version_no = #{param.versionNo}
+			</if>
+		order by
+		<choose>
+			<when test="param.sort == 'name'"> v.name</when>
+			<when test="param.sort == 'size'"> v.size</when>
+			<when test="param.sort == 'ctime'"> v.create_dt</when>
+			<otherwise>v.create_dt</otherwise>
+		</choose>
+		<choose>
+			<when test="param.sortdirection == 'ASC'"> ASC</when>
+			<otherwise> DESC</otherwise>
+		</choose>
+	</select>
+     
+	<select id="selectListAllTotalRows" resultType="int">
+			SELECT  COUNT(v.file_id) AS total
+			FROM rim_file_version AS v,rim_user AS u, rim_storage AS s
+			WHERE s.storage_id = #{param.storageId}
+			AND v.create_uid = s.owner_id
+			AND u.user_id = v.create_uid
+		
+			<if test="param.searchSize != null and param.searchSize != ''">
+				<choose>
+					<when test="1 == param.searchSize">
+						AND (1024*1024) > v.size
+					</when>
+					<when test="2 == param.searchSize">
+						AND v.size >= (1024*1024) AND (1024*1024*10) > v.size
+					</when>
+					<when test="3 == param.searchSize">
+						AND v.size >= (1024*1024*10) AND (1024*1024*100) > v.size
+					</when>
+					<when test="4 == param.searchSize">
+						AND v.size >= (1024*1024*100) AND (1024*1024*1024) > v.size
+					</when>
+					<when test="5 == param.searchSize">
+						AND v.size >= (1024*1024*1024) AND (1024*1024*1024*4) > v.size
+					</when>
+		
+				</choose>
+			</if>
+	</select>
+	
+    <select id="selectListAll" parameterType="paramDaoVO" resultMap="versionListMap">
+	    SELECT SQL_CALC_FOUND_ROWS A.* FROM (
+			SELECT
+					<include refid="include_versionResult"/>
+			FROM rim_file_version AS v,rim_user AS u, rim_storage AS s
+			WHERE s.storage_id = #{param.storageId}
+			AND v.create_uid = s.owner_id
+			AND u.user_id = v.create_uid
+		
+			<if test="param.searchSize != null and param.searchSize != ''">
+				<choose>
+					<when test="1 == param.searchSize">
+						AND (1024*1024) > v.size
+					</when>
+					<when test="2 == param.searchSize">
+						AND v.size >= (1024*1024) AND (1024*1024*10) > v.size
+					</when>
+					<when test="3 == param.searchSize">
+						AND v.size >= (1024*1024*10) AND (1024*1024*100) > v.size
+					</when>
+					<when test="4 == param.searchSize">
+						AND v.size >= (1024*1024*100) AND (1024*1024*1024) > v.size
+					</when>
+					<when test="5 == param.searchSize">
+						AND v.size >= (1024*1024*1024) AND (1024*1024*1024*4) > v.size
+					</when>
+		
+				</choose>
+			</if>				
+			order by
+			<choose>
+				<when test="param.sortId == 'name' and param.sort != 'DESC'">
+					, v.name
+				</when>
+				<when test="param.sortId == 'size'">
+					v.size
+				</when>
+				<when test="param.sortId == 'ctime'">
+					v.create_dt
+				</when>
+				<otherwise>
+					v.create_dt
+				</otherwise>
+			</choose>
+			
+			<choose>
+				<when test="param.sort == 'ASC'"> ASC</when>
+				<otherwise> DESC</otherwise>
+			</choose>		
+		) A
+		<if test="param.limit != null and param.offset != null and param.limit != '' and param.offset != ''">
+			 LIMIT ${param.limit} OFFSET ${param.offset}
+		</if>
+	</select>
+	
+	
+	<select id="selectListByVersionNo" parameterType="paramDaoVO" resultMap="versionListMap">		
+		SELECT  
+			<include refid="include_versionResult"/>
+		FROM rim_file_version AS v,rim_user AS u, rim_storage AS s
+		WHERE s.storage_id = #{param.storageId}
+		AND v.create_uid = s.owner_id
+		AND u.user_id = v.create_uid
+		
+		AND v.version_no IN
+		<foreach item="versionNo" index="index" collection="param.versionNo" open="(" separator="," close=")">
+			#{versionNo}
+		</foreach>
+	</select>
+	
+	<delete id="deleteListByVersionNo" parameterType="paramDaoVO">		
+		DELETE 
+		FROM rim_file_version
+		WHERE create_uid = (SELECT owner_id FROM rim_storage WHERE storage_id = #{param.storageId} )
+		AND version_no IN
+		<foreach item="versionNo" index="index" collection="param.versionNo" open="(" separator="," close=")">
+			#{versionNo}
+		</foreach>
+	</delete>
+	
+	
+	<select id="selectListIncludeSubFile" parameterType="paramDaoVO" resultMap="versionListMap">
+		SELECT
+			<include refid="include_versionResult"/>
+		FROM rim_file_version AS v, rim_user AS u
+		WHERE u.user_id = v.create_uid
+    	AND v.file_id IN (SELECT f.file_id
+						FROM rim_file f, (SELECT CONCAT(path, '%') AS path FROM rim_file WHERE file_id = #{param.fileId} AND storage_id = #{param.storageId}) f2
+						WHERE f.path LIKE f2.path)
+	</select>
+
+	<select id="selectInfo" parameterType="paramDaoVO" resultMap="versionListMap">
+		SELECT
+			<include refid="include_versionResult"/>
+		FROM rim_file_version AS v
+		INNER JOIN rim_user AS u
+		ON u.user_id = v.create_uid
+		WHERE v.version_no = #{param.versionNo}
+			AND v.file_id = #{param.fileId}
+		order by
+		<choose>
+			<when test="param.sort == 'name'"> v.name</when>
+			<when test="param.sort == 'size'"> v.size</when>
+			<when test="param.sort == 'ctime'"> v.create_dt</when>
+			<otherwise>v.create_dt</otherwise>
+		</choose>
+		<choose>
+			<when test="param.sortdirection == 'desc'"> DESC</when>
+			<otherwise> ASC</otherwise>
+		</choose>
+	</select>
+
+
+	<delete id="delete" parameterType="paramDaoVO">
+		DELETE FROM rim_file_version
+		WHERE file_id = #{param.fileId}
+		    AND version_no = #{param.versionNo}
+	</delete>
+
+	<delete id="clear" parameterType="paramDaoVO">
+		DELETE FROM rim_file_version
+		WHERE
+        <choose>
+			<when test="param.count == 'all'">
+			file_id IN (SELECT file_id FROM rim_file
+         				 WHERE storage_id = #{param.storageId}
+         	)
+			</when>
+			<otherwise>
+
+			</otherwise>
+		</choose>
+
+	</delete>
+
+	<delete id="deleteAll" parameterType="paramDaoVO">
+		DELETE FROM rim_file_version
+    	WHERE file_id IN (SELECT f.file_id
+						FROM rim_file f WHERE file_id = #{param.fileId} AND storage_id = #{param.storageId})
+	</delete>
+
+	<delete id="deleteAllIncludeSubFile" parameterType="paramDaoVO">
+		DELETE FROM rim_file_version
+		WHERE file_id IN (SELECT f.file_id
+						FROM rim_file f, (SELECT CONCAT(path, '%') AS path 
+											FROM rim_file 
+											WHERE file_id = #{param.fileId} 
+												AND storage_id = #{param.storageId} ) f2
+						WHERE f.path LIKE f2.path)
+	</delete>
+	
+	<insert id="insertVersion" parameterType="paramDaoVO">
+		INSERT INTO rim_file_version (
+			file_id
+			,name
+			,path
+			,size
+			,mimetype
+			,create_uid
+			,create_dt
+		)
+		VALUES (
+			 #{param.fileId}
+			, #{param.name}
+			, #{param.path}
+			, #{param.size}
+			, #{param.mimeType}
+			, #{param.createUserId}
+			, now()
+		)
+	</insert>
+
+	<update id="updateVersionFileReName" parameterType="paramDaoVO">
+		UPDATE rim_file_version v
+		SET name=CONCAT(#{param.targetName}, RIGHT(name, #{param.lengthTimeStamp}))
+			, path=CONCAT(#{param.targetPath}, RIGHT(name, #{param.lengthTimeStamp}))
+		WHERE file_id=#{param.fileId}
+	</update>
+
+	<update id="updateVersionFilePathForMove"  parameterType="paramDaoVO">
+		UPDATE rim_file_version v
+		SET v.path=CONCAT(REPLACE(LEFT(v.path, CHAR_LENGTH(#{param.sourcePath})), #{param.sourcePath}, #{param.targetPath}), SUBSTRING(v.path, CHAR_LENGTH(#{param.sourcePath}) + 1))
+			WHERE v.file_id=#{param.fileId}
+	</update>
+
+	<update id="updateVersionFolderPathForMove"  parameterType="paramDaoVO">
+		UPDATE rim_file_version v
+		SET v.path=CONCAT(REPLACE(LEFT(v.path, CHAR_LENGTH(#{param.sourcePath})), #{param.sourcePath}, #{param.targetPath}), SUBSTRING(v.path, CHAR_LENGTH(#{param.sourcePath}) + 1))
+			WHERE v.path like CONCAT(#{param.sourcePath},'/%')
+	</update>
+	
+</mapper>

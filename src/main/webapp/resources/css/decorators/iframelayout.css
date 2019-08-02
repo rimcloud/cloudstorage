@@ -1,0 +1,78 @@
+.error{font:0.8em Tahoma,sans-serif;color:#ED7476;text-align: left;}
+
+.content-wrapper,
+.right-side {
+    background-color: #ffffff;
+}
+
+.box .box-primary {
+    border-top-color: #3c8dbc;
+}
+.box {
+    border-radius: 0px;   
+}
+
+.box-xs , .box-tree-xs , .box-table-xs {
+	height: 550px;
+}
+
+.box-tree-xs .box-body{
+	height: 80%;
+	overflow-x : hidden;	
+}
+
+.box-query {
+   border-radius: 0px;
+   box-shadow: 0 0 0;
+}
+
+.box-header .box-title { 
+    font-size: inherit;
+    font-weight: bold;
+}
+
+.input-group-query-xs>.form-control,
+.input-group-query-xs>.input-group-addon
+{
+    height: 25px;
+    padding: 2px 10px;   
+}
+.input-group-query-xs>.input-group-addon {
+    border-radius: 0;
+    border-color: #f0f3f9;
+    background-color: #f0f3f9;
+    font-family: inherit;
+    font-size: inherit;   
+    font-weight: bold;
+}
+.input-group-query-xs>select,
+.input-group-query-xs>input{
+    font-family: inherit;
+    font-size: inherit;    	
+}
+.input-group-tree-xs {
+    width: 180px;
+    height: 25px;
+}
+.input-group-tree-xs>.form-control, 
+.input-group-tree-xs>.input-group-addon,
+.input-group-tree-xs>.input-group-btn>.btn,
+.input-group-xs>.form-control, 
+.input-group-xs>.input-group-addon,
+.input-group-xs>.input-group-btn>.btn {
+	height: 25px;
+	padding: 2px 10px;
+    font-size: 12px;  
+}
+.input-group-xs>select,
+.input-group-xs>input{
+    font-family: inherit;
+    font-size: inherit;    	
+}
+.JSTable .table>tbody>tr>td,.JSTable .table>thead>tr>th {
+    text-align: center;  
+}
+
+.content-wrapper, .right-side, .main-footer {
+    margin-left: 0px;
+}

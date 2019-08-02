@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration	PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<typeAliases>
+		<typeAlias alias="paramDaoVO" type="kr.co.crim.oss.rimdrive.common.service.ParamDaoVO" />
+		<typeAlias alias="loginVO"	type="kr.co.crim.oss.rimdrive.account.service.LoginVO" />
+		<typeAlias alias="sessionVO"	type="kr.co.crim.oss.rimdrive.common.service.SessionVO" />
+		<typeAlias alias="empVO" type="kr.co.crim.oss.rimdrive.account.service.EmpVO" />
+		<typeAlias alias="deptVO" type="kr.co.crim.oss.rimdrive.account.service.DeptVO" />
+		<typeAlias alias="loginEmpVO" type="kr.co.crim.oss.rimdrive.common.service.LoginEmpVO" />
+		<typeAlias alias="storageVO" type="kr.co.crim.oss.rimdrive.files.service.StorageVO" />
+		<typeAlias alias="fileVO" type="kr.co.crim.oss.rimdrive.files.service.FileVO"/>
+		<typeAlias alias="fileListVO" type="kr.co.crim.oss.rimdrive.files.service.FileListVO"/>
+		<typeAlias alias="folderSubInfoVO" type="kr.co.crim.oss.rimdrive.files.service.FolderSubInfoVO"/>
+		<typeAlias alias="versionVO" type="kr.co.crim.oss.rimdrive.files.service.VersionVO"/>
+		<typeAlias alias="trashbinVO" type="kr.co.crim.oss.rimdrive.files.service.TrashBinVO"/>
+		<typeAlias alias="folderInfoVO" type="kr.co.crim.oss.rimdrive.files.service.FolderInfoVO"/>
+		<typeAlias alias="sharingInListVO" type="kr.co.crim.oss.rimdrive.share.service.SharingInListVO"/>
+		<typeAlias alias="sharingLinksListVO" type="kr.co.crim.oss.rimdrive.share.service.SharingLinksListVO"/>
+		<typeAlias alias="sharingOutListVO" type="kr.co.crim.oss.rimdrive.share.service.SharingOutListVO"/>
+		<typeAlias alias="shareInfoVO" type="kr.co.crim.oss.rimdrive.share.service.ShareInfoVO"/>
+		<typeAlias alias="searchListVO" type="kr.co.crim.oss.rimdrive.search.service.SearchListVO"/>
+		<typeAlias alias="shareVO" type="kr.co.crim.oss.rimdrive.share.service.ShareVO"/>
+		<typeAlias alias="shareTargetVO" type="kr.co.crim.oss.rimdrive.share.service.ShareTargetVO"/>
+
+	</typeAliases>
+
+</configuration>

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="searchDAO">
+
+	<resultMap id="searchListMap" type="searchListVO" >
+		<result property="storageAccessType" column="storageAccessType" javaType="String" />
+		<result property="fileId" column="file_id" javaType="long" />
+		<result property="storageId" column="storage_id" javaType="String" />
+		<result property="fileType" column="file_tp" javaType="String" />
+		<result property="path" column="path"  javaType="String" />
+		<result property="pathHash" column="path_hash"  javaType="String" />
+
+		<result property="name" column="name"  javaType="String" />
+		<result property="size" column="size"  javaType="long" />
+		<result property="searchTag" column="search_tag"  javaType="String" />
+
+		<result property="displayModifyDate" column="displayModifyDate"  javaType="String" />
+		<result property="modifyUserName" column="modifyUserName"  javaType="String" />
+
+	</resultMap>
+
+	<select id="selectTotalRows" resultType="int">
+        SELECT FOUND_ROWS() AS total
+    </select>
+
+	<sql id="include_SelectListResult">
+		f.file_id
+		, f.file_tp
+		, f.size
+		, IFNULL(f.search_tag,'') AS search_tag
+		, DATE_FORMAT(f.modify_dt,'%Y-%m-%d %H:%i:%S') AS displayModifyDate
+	</sql>
+
+
+	<sql id="include_where_condition_file">
+
+			<if test="param.searchDoc != null and param.searchDoc != ''">
+			    AND f.file_tp='F'
+				AND SUBSTRING_INDEX(LOWER(f.name),'.',-1) IN
+				<foreach item="doctype" index="index" collection="param.searchDoc" open="(" separator="," close=")">
+					#{doctype}
+				</foreach>
+			</if>
+
+			<if test="param.searchModifydateStart != null and param.searchModifydateEnd != null and param.searchModifydateStart != '' and param.searchModifydateEnd != ''">
+				AND  ( f.modify_dt >= DATE(#{param.searchModifydateStart})
+				        AND  DATE_ADD(DATE(#{param.searchModifydateEnd}), interval +1 day) > f.modify_dt )
+			</if>
+
+			<if test="param.searchOwnerName != null and param.searchOwnerName != ''">
+				AND e.emp_nm LIKE CONCAT('%',#{param.searchOwnerName},'%')
+			</if>
+
+			<if test="param.searchSize != null and param.searchSize != ''">
+				AND f.file_tp='F'
+				<choose>
+					<when test="1 == param.searchSize" >
+						AND (1024*1024) > f.size
+					</when>
+					<when test="2 == param.searchSize" >
+						AND f.size >= (1024*1024) AND  (1024*1024*10) > f.size
+					</when>
+					<when test="3 == param.searchSize" >
+						AND f.size >= (1024*1024*10) AND (1024*1024*100) > f.size
+					</when>
+					<when test="4 == param.searchSize" >
+						AND f.size >= (1024*1024*100) AND (1024*1024*1024) > f.size
+					</when>
+					<when test="5 == param.searchSize" >
+						AND f.size >= (1024*1024*1024) AND (1024*1024*1024*4) > f.size
+					</when>
+
+				</choose>
+			</if>
+
+			<if test="param.searchTags != null and param.searchTags != ''">
+				AND f.search_tag LIKE CONCAT('%',#{param.searchTags},'%')
+			</if>
+
+	</sql>
+
+	<sql id="include_order">
+			ORDER BY f.file_tp
+			<choose>
+				<when test="param.sortId == 'name' and param.sort != 'DESC'">
+				 , name
+				</when>
+				<when test="param.sortId == 'size'">
+				 , f.size
+				</when>
+				<when test="param.sortId == 'modifyDate'">
+				 , f.modify_dt
+				</when>
+				<otherwise>
+				 , name
+				</otherwise>
+			</choose>
+			<if test="param.sort == 'DESC'">
+			   DESC
+			</if>
+	</sql>
+
+	<select id="selectListTotalRows" parameterType="paramDaoVO" resultType="int">
+			SELECT COUNT(f.file_id) AS total
+ 			FROM rim_file f
+
+ 			<if test="param.searchOwnerName != null and param.searchOwnerName != ''">
+				 , rim_emp e
+			</if>
+			WHERE 1 =1
+ 			<if test="param.searchOwnerName != null and param.searchOwnerName != ''">
+				 AND f.modify_uid = e.emp_id
+			</if>
+
+			 AND f.path LIKE 'files/%'
+
+  			<include refid="include_where_condition_file"/>
+
+			  AND f.storage_id = #{param.searchPosStorageId}
+
+			<if test="param.searchText != null and param.searchText != ''">
+				AND f.name LIKE CONCAT('%',#{param.searchText},'%')
+			</if>
+	</select>
+
+	<select id="selectList" parameterType="paramDaoVO" resultMap="searchListMap">
+		SELECT SQL_CALC_FOUND_ROWS A.* FROM (
+			SELECT
+
+  			<include refid="include_SelectListResult"/>
+  		 		, f.path
+				, f.path_hash
+				, f.name
+  				, f.storage_id
+				, #{param.storageAccessType}	AS storageAccessType
+			<choose>
+				<when test="param.searchOwnerName != null and param.searchOwnerName != ''">
+				 , e.emp_nm AS modifyUserName
+				</when>
+				<otherwise>
+				 , IFNULL( (SELECT e.emp_nm FROM rim_emp e WHERE e.emp_id = f.modify_uid) , '') AS modifyUserName
+				</otherwise>
+			</choose>
+
+ 			FROM rim_file f
+ 			<if test="param.searchOwnerName != null and param.searchOwnerName != ''">
+				 , rim_emp e
+			</if>
+			WHERE 1 =1
+ 			<if test="param.searchOwnerName != null and param.searchOwnerName != ''">
+				 AND f.modify_uid = e.emp_id
+			</if>
+
+			 AND f.path LIKE 'files/%'
+
+  			<include refid="include_where_condition_file"/>
+
+			  AND f.storage_id = #{param.searchPosStorageId}
+
+			<if test="param.searchText != null and param.searchText != ''">
+				AND f.name LIKE CONCAT('%',#{param.searchText},'%')
+			</if>
+
+			<include refid="include_order"/>
+
+		) A
+		<if test="param.limit != null and param.offset != null and param.limit != '' and param.offset != ''">
+			 LIMIT ${param.limit} OFFSET ${param.offset}
+		</if>
+	</select>
+
+</mapper>

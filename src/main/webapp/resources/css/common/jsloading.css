@@ -1,0 +1,41 @@
+
+.modal-loading {
+  text-align: center;
+  padding: 0!important;
+  z-index: 1070;
+}
+.modal-header-loading,
+.modal-body-loading{
+	text-align: center;
+	margin: 30px 0;
+}
+.modal-loading:before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  margin-right: -4px;
+}
+
+.modal-dialog-loading {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+}
+.modal-content-loading {
+    position: relative;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+}
+.loading-msg{
+ font-family: Lucida Handwriting;
+ font-size: 16px;
+ color: #fff;
+ font-weight: bold;
+}
+.loading-img{
+	width:100px; height:100px;
+}
+.rim-loading{
+	  z-index: 1080;
+}

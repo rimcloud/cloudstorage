@@ -1,0 +1,116 @@
+.modal {
+  text-align: center;
+  padding: 0!important; 
+}
+
+.modal:before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  margin-right: -4px;
+}
+
+.modal-dialog {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.modal-header-info {  
+    background-color: #5bc0de;  
+}
+.modal-open {
+	overflow: hidden;
+    padding-right: 0 !important;
+}
+.modal .fa-exclamation{
+	 color: yellow;
+	 font-size: 20px;  
+}
+.modal .fa-question{
+	color: red;
+	font-size: 20px;  	
+}
+
+.modal-dialog .btn {
+    font-size: 12px;
+  
+}
+.modal-dialog .form-control {
+    font-size: 12px;
+    height : inherit;
+}
+.modal-header {
+    padding: 5px;
+    border-bottom: 1px solid #e5e5e5;
+}
+.modal-footer {
+    padding: 5px;
+    text-align: right;
+    border-top: 1px solid #e5e5e5;
+}
+.rim-dialog{
+  z-index: 1070;
+  
+}
+.rim-dialog .modal-dialog{
+  width: 400px;
+}
+.rim-dialog .modal-title {
+     
+    color: white;
+}
+
+.rim-modal{
+  z-index: 1070;
+}
+.rim-modal .col-xs-6 {
+    padding-right: 3px;
+    padding-left: 3px;
+}
+.rim-modal .box {
+   margin-bottom: 0px;
+   border-radius: 0px;
+   border: 1px solid #d2d6de; 
+}
+.rim-modal .box-header {
+    padding: 5px; 
+}
+
+.rim-modal .box-header .box-title {
+    font-size: 12px;
+    font-weight: bold;
+ }
+
+.rim-modal .box-body {
+    padding: 1px;
+}
+.rim-modal .modal-dialog .form-control {    
+    height: 25px;
+    margin-top: 2px;
+}
+
+.rim-modal .input-group-rim-btn>.form-control, .input-group-rim-btn>.input-group-addon, .input-group-rim-btn>.input-group-btn>.btn {
+    height: 25px;
+    padding: 2px 10px;
+    margin-top: 1px;
+}
+
+.rim-modal table thead th {
+	text-align: center;   
+}
+.rim-modal table tbody td {
+	text-align: center;   
+}
+.rim-modal .checkbox, .radio {
+   margin-top: 5px;
+   margin-bottom: 5px;
+}
+.rim-modal .form-group {
+    margin-bottom: 5px;
+}
+
+
+
+

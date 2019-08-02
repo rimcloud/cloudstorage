@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="sharingOutDAO">
+
+	<resultMap id="sharingOutListMap" type="sharingOutListVO" >
+		<result property="fileId" column="file_id" javaType="long" />
+		<result property="storageId" column="storage_id" javaType="String" />
+		<result property="fileType" column="file_tp" javaType="String" />
+		<result property="path" column="path"  javaType="String" />
+		<result property="pathHash" column="path_hash" javaType="String" />
+		<result property="parentId" column="parent_id" javaType="long" />
+		<result property="name" column="name" javaType="String" />
+		<result property="size" column="size" javaType="long" />
+		<result property="searchTag" column="search_tag" javaType="String" />
+		<result property="mimeType" column="mimetype" javaType="String" />
+		<result property="shareTp" column="share_tp" javaType="String" />
+		<result property="bookmarked" column="bookmarked" javaType="String" />
+		<result property="modifyUserId" column="modify_uid" />
+		<result property="createUserId" column="create_uid" />
+		<result property="createDate" column="create_dt" />
+		<result property="displayCreateDate" column="displayCreateDate" javaType="String"/>
+		<result property="modifyDate" column="modify_dt" />
+		<result property="displayModifyDate" column="displayModifyDate" javaType="String" />
+		<result property="shareWithCnt" column="share_with_cnt" javaType="int" />
+		<result property="shareWithAll" column="share_with_all" javaType="String" />
+		<result property="shareDate" column="share_dt" />
+		<result property="displayExpirationDate" column="displayExpirationDate" javaType="String" />
+	</resultMap>
+
+	<select id="selectTotalRows" resultType="int">
+        SELECT FOUND_ROWS() AS total
+    </select>
+
+	<sql id="include_SelectListResult">
+ 			  f.file_id
+			, f.storage_id
+			, f.file_tp
+			, f.path
+			, f.path_hash
+			, f.parent_id
+			, f.name
+			, f.size
+			, IFNULL(f.search_tag, '') AS search_tag
+			, f.mimetype
+			, f.create_uid
+			, f.create_dt
+			, f.modify_uid
+			, f.modify_dt
+			, DATE_FORMAT(f.modify_dt,'%Y-%m-%d %H:%i:%S') AS displayModifyDate
+			, DATE_FORMAT(f.create_dt,'%Y-%m-%d %H:%i:%S') AS displayCreateDate
+	</sql>
+
+
+	<select id="selectList" parameterType="paramDaoVO" resultMap="sharingOutListMap">
+	SELECT SQL_CALC_FOUND_ROWS A.* FROM (
+		SELECT  <include refid="include_SelectListResult"/>
+				,s.share_tp
+		        <choose>
+					<when test="param.userId != null" >
+					  ,( SELECT IF ( COUNT(file_id) > 0 , 'Y' , 'N' )
+					       FROM rim_bookmark bmark
+					       WHERE bmark.file_id = f.file_id AND bmark.user_id = #{param.userId} AND bmark.storage_id = #{param.storageId} ) AS bookmarked
+					</when>
+					<otherwise>
+					  , 'N' AS bookmarked
+					</otherwise>
+			 	</choose>
+				, s.create_dt share_dt
+				, DATE_FORMAT(s.create_dt,'%Y-%m-%d %H:%i:%S') AS displayShareDate
+				, s.share_with_cnt share_with_cnt
+				, s.share_with_all share_with_all
+		FROM
+		    (
+		    SELECT sm.storage_id, sm.file_id , sm.share_id, sm.create_dt , sm.share_tp 
+		    		, COUNT(st.share_target_no) share_with_cnt
+		    		, GROUP_CONCAT(t_nm) share_with_all
+		    FROM rim_share sm , rim_share_target st
+		         , ( SELECT 'D' AS t_tp, dept_cd AS t_id, dept_nm as t_nm FROM rim_dept WHERE opt_yn ='Y'
+		             UNION ALL
+		             SELECT 'U' AS t_tp, emp_id AS t_id, emp_nm AS t_nm FROM rim_emp WHERE hlofc_yn='Y' AND cloud_allow_yn ='Y'
+		           ) t_info
+		    WHERE sm.share_id = st.share_id
+		      AND sm.storage_id = #{param.storageId}
+		      AND st.target_tp = t_info.t_tp
+		      AND st.share_with_uid = t_info.t_id
+		    GROUP BY  sm.storage_id, sm.file_id , sm.share_id, sm.create_dt
+		    ) AS s
+		    , rim_file f
+		WHERE s.file_id = f.file_id
+		  AND s.storage_id = f.storage_id
+			<if test="param.fromDate != null and param.toDate != null and param.fromDate != '' and param.toDate != ''">
+				AND  ( DATE(s.create_dt) >= #{param.fromDate}
+				AND  #{param.toDate} >  DATE(f.modify_dt) )
+			</if>
+
+			<if test="param.searchId == 'Name' and param.searchText != null and param.searchText != ''">
+			   AND f.name LIKE CONCAT('%',#{param.searchText},'%')
+			</if>
+
+			ORDER BY f.file_tp
+			<choose>
+				<when test="param.sortId == 'name' and param.sort != 'DESC'">
+				 , f.name
+				</when>
+				<when test="param.sortId == 'size'">
+				 , f.size
+				</when>
+				<when test="param.sortId == 'shareDate'">
+				 , s.create_dt
+				</when>
+				<otherwise>
+				 , f.name
+				</otherwise>
+			</choose>
+			<if test="param.sort == 'DESC'">
+			   DESC
+			</if>
+
+		) A
+		<if test="param.limit != null and param.offset != null and param.limit != '' and param.offset != ''">
+			LIMIT ${param.limit} OFFSET ${param.offset}
+		</if>
+
+	</select>
+
+	<resultMap id="folderSubInfoMap" type="folderSubInfoVO" >
+		<result property="subDirCount" column="subDirCount" />
+		<result property="subFileCount" column="subFileCount"/>
+		<result property="size" column="size" />
+	</resultMap>
+
+	<select id="selectFileInfo" parameterType="paramDaoVO" resultMap="sharingOutListMap">
+		SELECT <include refid="include_SelectListResult"/>
+				,s.share_tp
+		        <choose>
+					<when test="param.userId != null" >
+					  ,( SELECT IF ( COUNT(file_id) > 0 , 'Y' , 'N' )
+					       FROM rim_bookmark bmark
+					       WHERE bmark.file_id = f.file_id AND bmark.user_id = #{param.userId} AND bmark.storage_id = #{param.storageId} ) AS bookmarked
+					</when>
+					<otherwise>
+					  , 'N' AS bookmarked
+					</otherwise>
+			 	</choose>
+				, s.create_dt share_dt
+				, DATE_FORMAT(s.create_dt,'%Y-%m-%d %H:%i:%S') AS displayShareDate
+				, s.share_with_cnt share_with_cnt
+				, s.share_with_all share_with_all
+		    (
+		    SELECT sm.storage_id, sm.file_id , sm.share_id, sm.create_dt , sm.share_tp 
+		    		, COUNT(st.share_target_no) share_with_cnt
+		    		, GROUP_CONCAT(t_nm) share_with_all
+		    FROM rim_share sm , rim_share_target st
+		         , ( SELECT 'D' AS t_tp, dept_cd AS t_id, dept_nm as t_nm FROM rim_dept WHERE opt_yn ='Y'
+		             UNION ALL
+		             SELECT 'U' AS t_tp, emp_id AS t_id, emp_nm AS t_nm FROM rim_emp WHERE hlofc_yn='Y' AND cloud_allow_yn ='Y'
+		           ) t_info
+		    WHERE sm.share_id = st.share_id
+		      AND sm.storage_id = #{param.storageId}
+		      AND st.target_tp = t_info.t_tp
+		      AND st.share_with_uid = t_info.t_id
+		    GROUP BY  sm.storage_id, sm.file_id , sm.share_id, sm.create_dt
+		    ) AS s
+		    , rim_file f
+		WHERE s.file_id = f.file_id
+		  AND s.storage_id =  f.storage_id
+		  AND f.file_id = #{param.fileId}
+		  AND f.storage_id = #{param.storageId}
+  		  ORDER BY f.file_tp, f.name
+	</select>
+
+	<resultMap id="shareMap" type="shareVO" >
+		<result property="shareId" column="share_id" javaType="long" />
+		<result property="shareTp" column="share_tp" javaType="String" />
+		<result property="storageId" column="storage_id" javaType="String" />
+		<result property="fileId" column="file_id" javaType="long" />
+		<result property="token" column="token" javaType="String" />
+		<result property="modifyDate" column="modify_dt" />
+		<result property="displayModifyDate" column="displayModifyDate" javaType="String" />
+		<result property="modifyUid" column="modify_uid" javaType="String" />
+		<result property="createDate" column="create_dt" />
+		<result property="displayCreateDate" column="displayCreateDate" javaType="String" />
+		<result property="createUid" column="create_uid" javaType="String" />
+	</resultMap>
+
+	<select id="selectShare" parameterType="paramDaoVO" resultMap="shareMap" >
+		SELECT share_id
+			,share_tp
+			,storage_id
+			,file_id
+			,token
+			,modify_dt
+			,DATE_FORMAT(modify_dt,'%Y-%m-%d %H:%i:%S') AS displayModifyDate
+			,modify_uid
+			,create_dt
+			,DATE_FORMAT(create_dt,'%Y-%m-%d %H:%i:%S') AS displayCreateDate
+			,create_uid
+		FROM rim_share
+		WHERE
+			<choose>
+				<when test="param.shareId != null and param.shareId != '' ">
+					share_id = #{param.shareId}
+				</when>
+				<otherwise>
+				storage_id = #{param.storageId}
+				AND file_id = #{param.fileId}
+				AND share_tp = 'M'
+				</otherwise>
+			</choose>
+	</select>
+
+	<insert id="insertShare" parameterType="paramDaoVO" >
+		INSERT INTO rim_share (
+			 share_tp
+			,storage_id
+			,file_id
+			,token
+			,modify_dt
+			,modify_uid
+			,create_dt
+			,create_uid
+		)
+		VALUES (
+			'M'
+			, #{param.storageId}
+			, #{param.fileId}
+			, null
+			, now()
+			, #{param.userId}
+			, now()
+			, #{param.userId}
+		)
+	</insert>
+
+	<delete id="deleteShare" parameterType="paramDaoVO">
+		DELETE FROM rim_share
+		WHERE share_id = #{param.shareId}
+	</delete>
+
+	<delete id="deleteAllShareByStroageId" parameterType="paramDaoVO">
+		DELETE FROM rim_share
+		WHERE storage_id =  #{param.storageId}
+	</delete>
+
+	<resultMap id="shareTargetMap" type="shareTargetVO" >
+		<result property="shareTargetNo" column="share_target_no" javaType="long" />
+		<result property="shareId" column="share_id" javaType="long" />
+		<result property="shareWithUid" column="share_with_uid" javaType="String" />
+		<result property="shareWithName" column="share_with_nm" javaType="String" />
+		<result property="permissions" column="permissions" javaType="String" />
+		<result property="targetTp" column="target_tp" javaType="String" />
+	</resultMap>
+
+	<select id="selectShareTargetList" parameterType="paramDaoVO" resultMap="shareTargetMap" >
+		SELECT   st.share_target_no
+			,st.share_id
+			,st.share_with_uid
+			,t_info.t_nm AS share_with_nm
+			,st.permissions
+			,st.target_tp
+	    FROM rim_share sm , rim_share_target st
+			, ( SELECT 'D' AS t_tp, dept_cd AS t_id, dept_nm as t_nm FROM rim_dept WHERE  opt_yn ='Y'
+				UNION ALL
+				SELECT 'U' AS t_tp, emp_id AS t_id, emp_nm AS t_nm FROM rim_emp WHERE hlofc_yn='Y' AND cloud_allow_yn ='Y'
+			) t_info
+			, rim_file f
+	    WHERE sm.share_id = st.share_id
+			AND st.target_tp = t_info.t_tp
+			AND st.share_with_uid = t_info.t_id
+			AND sm.file_id = f.file_id
+			AND sm.storage_id = f.storage_id
+			AND sm.share_id = #{param.shareId}
+	</select>
+
+	<insert id="insertShareTarget" parameterType="paramDaoVO" >
+		INSERT INTO rim_share_target (
+					share_id
+					,share_with_uid
+					,permissions
+					,target_tp
+					,share_nm
+					,modify_dt
+					,modify_uid
+					,create_dt
+					,create_uid
+		)
+		VALUES
+		 <foreach item="insertTarget" index="index" collection="param.insertTarget"  separator=" , ">
+		(
+			  #{param.shareId}
+			, #{insertTarget.shareWithUid}
+			, #{insertTarget.permissions}
+			, #{insertTarget.targetTp}
+			, ( SELECT a.share_nm
+		        FROM
+		          ( SELECT CASE WHEN seq_no = 1 THEN ff.name ELSE CONCAT(f_name,' (', varchar_num, ')' , f_ext ) END AS share_nm
+		              FROM rim_rownum r
+			                , ( SELECT f.name
+			                            , CASE WHEN file_tp = 'D' THEN f.name ELSE SUBSTRING(f.name , 1, CHAR_LENGTH(f.name) - 1 -  CHAR_LENGTH(SUBSTRING_INDEX(f.name , '.' , -1))) END AS f_name
+							 			, CASE WHEN file_tp = 'D' THEN '' ELSE CONCAT('.' , SUBSTRING_INDEX(f.name , '.' , -1) ) END as f_ext
+			                  	FROM rim_file f, rim_share s WHERE f.file_id = s.file_id AND s.share_id = #{param.shareId}
+			                ) ff
+		              ORDER BY seq_no ) AS a
+		           LEFT OUTER JOIN
+		          (  SELECT st.share_nm FROM rim_share_target st WHERE st.share_with_uid = #{insertTarget.shareWithUid} ) AS b
+		          ON a.share_nm = b.share_nm
+
+		        WHERE b.share_nm is null
+		        LIMIT 1
+		       )
+			, now()
+			, #{param.userId}
+			, now()
+			, #{param.userId}
+		)
+		</foreach>
+	</insert>
+
+	<update id="updateShareTarget" parameterType="paramDaoVO">
+		UPDATE rim_share_target
+		SET
+			permissions = #{param.permissions}
+			,modify_dt = now()
+			,modify_uid = #{param.userId}
+		WHERE share_target_no IN
+			<foreach item="updateTarget" index="index" collection="param.updateTarget" open="(" separator="," close=")">
+				#{updateTarget.shareTargetNo}
+			</foreach>
+	</update>
+
+	<delete id="deleteShareTarget" parameterType="paramDaoVO">
+		DELETE FROM rim_share_target
+		WHERE
+		<choose>
+			<when test="param.shareId != null and param.shareId != '' ">
+				share_id = #{param.shareId}
+			</when>
+			<when test="param.storageId != null and param.storageId != '' and param.fileId != null and param.fileId != '' ">
+				share_id IN (SELECT share_id FROM rim_share
+								WHERE storage_id = #{param.storageId}
+									AND file_id = #{param.fileId} )
+			</when>
+			<otherwise>
+				share_target_no IN
+				<foreach item="deleteTarget" index="index" collection="param.deleteTarget" open="(" separator="," close=")">
+					#{deleteTarget.shareTargetNo}
+				</foreach>
+			</otherwise>
+		</choose>
+	</delete>
+
+
+</mapper>

@@ -1,0 +1,123 @@
+.row {
+	margin-right: 0px;
+	margin-left: 0px;
+}
+
+.col-xs-6 {
+	padding-right: 0px;
+	padding-left: 0px;
+}
+
+.callout {
+	border-radius: 0px;
+	margin: 0 0 2px 0;
+	padding: 15px 30px 5px 15px;
+	border-left: 20px solid #eee;
+}
+
+.content {
+	padding: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+    min-height: 300px;
+}
+}
+
+.form-control {    
+    font-size: 12px;
+}
+
+
+.box {
+	margin-bottom: 0px;
+	border-radius: 0px;
+	border: 1px solid #d2d6de;
+}
+
+.box-header {
+	padding: 5px;
+}
+
+.box-header .box-title {
+	font-size: 12px;
+	font-weight: bold;
+}
+
+.box-body {
+	padding: 1px;
+}
+
+.box-popup-top-left table thead th,
+.box-popup-top-left table tbody tr,
+.box-popup-top-right table thead th,
+.box-popup-top-right table tbody tr,
+.box-popup-bottom-left table thead th,
+.box-popup-bottom-left table tbody tr,
+.box-popup-bottom-right table thead th,
+.box-popup-bottom-right table tbody tr,
+.box-popup-bottom-full table thead th,
+.box-popup-bottom-full  table tbody tr {
+	text-align: center;
+}
+
+.box-popup-top-left .input-group,
+.box-popup-top-right .input-group,
+.box-popup-bottom-left .input-group,
+.box-popup-bottom-right .input-group,
+.box-popup-bottom-full .input-group {
+	width: 250px;
+	height: 25px;
+}
+
+.box-popup-top-left{
+	
+}
+.box-popup-top-left .box-body {
+	height: 230px;
+	overflow: auto;
+}
+
+.box-popup-top-right{
+	
+}
+
+.box-popup-top-right .box-body {
+	height: 230px;
+	overflow: auto;
+}
+
+.box-popup-bottom-left{
+	
+}
+.box-popup-bottom-left .box-body {
+	height: 250px;
+	overflow: auto;
+}
+
+.box-popup-bottom-right{
+	
+}
+.box-popup-bottom-right .box-body {
+	height: 250px;
+	overflow: auto;
+}
+
+.box-popup-bottom-full {
+	
+}
+.box-popup-bottom-full .box-body {
+	height: 250px;
+	overflow: auto;
+}
+
+.row-popup-command {
+	margin-top: 15px;
+}
+
+.input-group-xs>.form-control, 
+.input-group-xs>.input-group-addon,
+.input-group-xs>.input-group-btn>.btn {
+	height: 25px;
+	padding: 2px 10px;
+    font-size: 12px;  
+}

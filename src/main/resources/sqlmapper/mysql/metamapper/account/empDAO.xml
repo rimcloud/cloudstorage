@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="empDAO">
+
+	<resultMap id="empListMap" type="empVO" >
+		<result property="empId" column="emp_id" javaType="String" />
+		<result property="empNm" column="emp_nm" javaType="String" />
+		<result property="hlofcYn" column="hlofc_yn" javaType="String" />
+		<result property="cloudAllowYn" column="cloud_allow_yn" javaType="String" />
+		<result property="createTp" column="create_tp" javaType="String" />
+		<result property="loginId" column="login_id" javaType="String" />
+		<result property="pwdChgObjYn" column="pwd_chg_obj_yn" javaType="String" />
+		<result property="grade" column="grade" javaType="String" />
+		<result property="sortSord" column="sort_sord" javaType="String" />
+		<result property="deptCd" column="dept_cd" javaType="String" />
+		<result property="deptNm" column="dept_nm" javaType="String" />
+		<result property="quota" column="quota" javaType="int" />
+	</resultMap>
+
+	<sql id="include_SelectListResult">
+ 		e.emp_id, e.emp_nm, e.hlofc_yn, e.cloud_allow_yn, e.create_tp, e.login_id, e.pwd_chg_obj_yn, e.grade, e.sort_sord, e.dept_cd , e.quota
+	</sql>
+
+	<select id="selectList" parameterType="paramDaoVO" resultMap="empListMap">
+	    SELECT <include refid="include_SelectListResult"/>
+       	, (SELECT dept_nm FROM rim_dept WHERE dept_cd = e.dept_cd ) AS dept_nm
+       	FROM rim_emp AS e
+		WHERE e.dept_cd = #{param.deptCd}
+  			AND e.hlofc_yn = 'Y'
+  			AND e.cloud_allow_yn = 'Y'
+		ORDER BY e.sort_sord, e.emp_nm;
+    </select>
+
+    <select id="selectSearchList" parameterType="paramDaoVO" resultMap="empListMap">
+	    SELECT <include refid="include_SelectListResult"/>
+	    , dept.dept_nm
+       	FROM rim_emp AS e , rim_dept dept
+		WHERE e.dept_cd = dept.dept_cd
+  			AND e.hlofc_yn = 'Y'
+  			AND e.cloud_allow_yn = 'Y'
+  			<if test="param.searchId == 'empNm' and param.searchText != null and param.searchText != ''">
+			AND e.emp_nm LIKE CONCAT('%',#{param.searchText},'%')
+			</if>
+			<if test="param.email != null and param.email != ''">
+		 	AND e.emp_id = #{param.email}
+			</if>
+		ORDER BY e.sort_sord, e.emp_nm;
+    </select>
+
+    <select id="selectEmpInfo" parameterType="paramDaoVO" resultMap="empListMap">
+	 	 SELECT <include refid="include_SelectListResult"/>
+		  FROM rim_emp AS e
+		  WHERE 1=1
+		 <choose>
+		   <when test="param.loginId != null and param.loginId != ''">
+		 	AND e.login_id = #{param.loginId}
+			</when>
+		    <when test="param.empId != null and param.empId != ''">
+		 	AND e.emp_id = #{param.empId}
+			</when>
+			<otherwise>
+			AND e.emp_id = #{param.empId}
+			</otherwise>
+		</choose>
+    </select>
+
+	<insert id="insertStorageInfo" parameterType="paramDaoVO">
+		INSERT INTO rim_storage (
+			storage_id
+			, owner_id
+			, quota
+			, owner_tp
+			, create_dt
+			, create_uid
+			, modify_dt
+			, modify_uid
+		) VALUES (
+			  #{param.storageId}
+			, #{param.ownerId}
+			, #{param.quota}
+			, 'U'
+			, now()
+			, #{param.createUserId}
+			, now()
+			, #{param.createUserId}
+		)
+	</insert>
+
+	<select id="selectStorageInfo" parameterType="paramDaoVO" resultType="int">
+	    SELECT count(owner_id)
+		FROM rim_storage
+		WHERE owner_id = #{param.userId}
+    </select>
+
+     <update id="updateQuotaByOwnerId" parameterType="paramDaoVO">
+		UPDATE rim_storage
+		SET quota = #{param.quota}
+			, modify_dt = now()
+			, modify_uid = #{param.modifyUserId}
+		WHERE owner_id = #{param.ownerId}
+			AND owner_tp = 'U'
+	</update>
+
+    <select id="selectUserInfo" parameterType="paramDaoVO" resultType="int">
+	    SELECT count(user_id)
+		FROM rim_user
+		WHERE user_id = #{param.userId}
+    </select>
+
+	<insert id="insertUserInfo" parameterType="paramDaoVO">
+		INSERT INTO rim_user (
+			  user_id
+			, display_nm
+			, passwd
+		) VALUES (
+			  #{param.userId}
+			, #{param.displayNm}
+			, fc_pwd_hash(#{param.password})
+		)
+	</insert>
+
+
+	<update id="updateUserInfo" parameterType="paramDaoVO">
+		UPDATE rim_user
+		SET
+			<choose>
+				<when test="param.password != null and param.password != ''" >
+					passwd = fc_pwd_hash(#{param.password}),
+				</when>
+				<when test="param.empNm != null and param.empNm != ''" >
+					display_nm = #{param.empNm}
+				</when>
+				<otherwise>
+				</otherwise>
+			 </choose>
+		WHERE user_id = #{param.empId}
+	</update>
+
+</mapper>

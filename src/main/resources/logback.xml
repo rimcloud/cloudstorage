@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<Pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%logger{0}-%M] - %msg%n</Pattern>
+		</encoder>
+	</appender>
+
+	<logger name="kr.co.crim.oss.rimdrive">
+		<level value="DEBUG" />
+	</logger>
+
+    <logger name="jdbc.connection" additivity="false">
+        <level value="WARN"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="jdbc.audit" additivity="false">
+        <level value="WARN"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="jdbc.sqlonly" additivity="false">
+        <level value="WARN"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="jdbc.sqltiming" additivity="false">
+        <level value="INFO"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="jdbc.resultset" additivity="false">
+        <level value="WARN"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="jdbc.resultsettable" additivity="false">
+        <level value="WARN"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+	<logger name="org.springframework.core">
+		<level value="INFO" />
+	</logger>
+
+	<logger name="org.springframework.beans">
+		<level value="INFO" />
+	</logger>
+
+	<logger name="org.springframework.context">
+		<level value="INFO" />
+	</logger>
+
+	<logger name="org.springframework.web">
+		<level value="INFO" />
+	</logger>
+
+	<logger name="org.springframework.aop">
+		<level value="INFO" />
+	</logger>
+
+	<logger name="filesDAO">
+		<level value="WARN" />
+	</logger>
+
+	<logger name="storageDAO">
+		<level value="WARN" />
+	</logger>
+
+	<logger name="groupStorageDAO">
+		<level value="WARN" />
+	</logger>
+
+	<logger name="groupStorageMemeberDAO">
+		<level value="WARN" />
+	</logger>
+
+	<logger name="deptDAO">
+		<level value="WARN" />
+	</logger>
+
+	<logger name="empDAO">
+		<level value="WARN" />
+	</logger>
+
+	<logger name="loginDAO">
+		<level value="WARN" />
+	</logger>
+
+	<logger name="clientDesktopDAO">
+		<level value="WARN" />
+	</logger>
+
+	<logger name="sharingInDAO">
+		<level value="WARN" />
+	</logger>
+
+	<logger name="sharingLinksDAO">
+		<level value="WARN" />
+	</logger>
+
+	<logger name="sharingOutDAO">
+		<level value="WARN" />
+	</logger>
+
+	<logger name="desktopDAO">
+		<level value="WARN" />
+	</logger>
+
+    <logger name="org.apache">
+		<level value="WARN" />
+	</logger>
+	
+	 <logger name="httpclient">
+		<level value="WARN" />
+	</logger>
+
+	<root level="DEBUG">
+		<priority value="WARN" />
+		<appender-ref ref="STDOUT" />
+	</root>
+
+
+</configuration>
