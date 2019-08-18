@@ -1,49 +1,44 @@
 # cloudstorage
-cloud storage and file explore in linux
+Cloud storage and file explore in linux.
 
+Cloud storage provides the functions of personal storage and group storage required for personal work and collaboration, and provides services that enable data sharing and data retrieval with other users in the cloud environment.
 
 ## Getting Started
 
-Preparing...
+See the URL below.
+https://github.com/rimcloud/cloudstorage/tree/master/ref
 
-### Prerequisites
-
-Preparing...
-
-```
-...
-```
 
 ### Installing
 
-Preparing...
+See the URL below.
+https://github.com/rimcloud/cloudstorage/tree/master/ref
 
 
-```
-...
-```
-
+(The installation reference will continue to be fixed.)
 
 
 ## Running the tests
 
 Preparing...
 
-
 ```
 ...
 ```
-
 
 ## Deployment
 
 Preparing...
 
-
 ## Built With
 
-* [React](http://www.reactjs.org) - The web framework used
+* [Spring](https://spring.io/) - Server Framework
+* [MySQL](https://www.mysql.com/) - Database
 * [Maven](https://maven.apache.org/) - Dependency Management
+
+```
+* [React](http://www.reactjs.org) - The web framework used ** NOT YET
+```
 
 ## Contributing
 
