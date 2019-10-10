@@ -20,6 +20,7 @@ https://github.com/rimcloud/cloudstorage/tree/master/ref
 ### Installing
 
 See the URL below.
+아래 링크를 참고하세요.
 
 https://github.com/rimcloud/cloudstorage/tree/master/ref
 
