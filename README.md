@@ -1,4 +1,7 @@
 # cloudstorage
+
+[![Build Status](https://travis-ci.org/rimcloud/cloudstorage.svg?branch=master)](https://travis-ci.org/rimcloud/cloudstorage)
+
 Cloud storage and file explore in linux.
 
 리눅스와 같은 개방형OS를 위한 클라우드저장소 서비스 프로그램
