@@ -27,10 +27,6 @@ public class SharingLinksListVO {
     private String displayModifyDate;
     private String displayCreateDate;
     private String token;
-    private String accessPw;
-    private String message;
-    private java.util.Date expirationDate;
-    private String displayExpirationDate;
     private java.util.Date shareDate;
     private String displayShareDate;
 
@@ -201,38 +197,6 @@ public class SharingLinksListVO {
 
     public void setToken(String token) {
 	this.token = token;
-    }
-
-    public String getAccessPw() {
-	return accessPw;
-    }
-
-    public void setAccessPw(String accessPw) {
-	this.accessPw = accessPw;
-    }
-
-    public java.util.Date getExpirationDate() {
-	return expirationDate;
-    }
-
-    public void setExpirationDate(java.util.Date expirationDate) {
-	this.expirationDate = expirationDate;
-    }
-
-    public String getDisplayExpirationDate() {
-	return displayExpirationDate;
-    }
-
-    public void setDisplayExpirationDate(String displayExpirationDate) {
-	this.displayExpirationDate = displayExpirationDate;
-    }
-
-    public String getMessage() {
-	return message;
-    }
-
-    public void setMessage(String message) {
-	this.message = message;
     }
 
     public java.util.Date getShareDate() {

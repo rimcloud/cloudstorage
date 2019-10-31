@@ -25,13 +25,9 @@ public class SharingInListVO {
     private String modifyUserId;
     private java.util.Date createDate;
     private java.util.Date modifyDate;
+    private java.util.Date shareDate;
     private String displayModifyDate;
     private String displayCreateDate;
-    private String accessPw;
-    private String message;
-    private java.util.Date expirationDate;
-    private String displayExpirationDate;
-    private java.util.Date shareDate;
     private String displayShareDate;
     private String shareStorageId;
     private String sharePermissions;
@@ -238,40 +234,6 @@ public class SharingInListVO {
     public void setSharePermissions(String sharePermissions) {
 	this.sharePermissions = sharePermissions;
     }
-
-
-    public String getAccessPw() {
-	return accessPw;
-    }
-
-    public void setAccessPw(String accessPw) {
-	this.accessPw = accessPw;
-    }
-
-    public String getMessage() {
-	return message;
-    }
-
-    public void setMessage(String message) {
-	this.message = message;
-    }
-
-    public java.util.Date getExpirationDate() {
-	return expirationDate;
-    }
-
-    public void setExpirationDate(java.util.Date expirationDate) {
-	this.expirationDate = expirationDate;
-    }
-
-    public String getDisplayExpirationDate() {
-	return displayExpirationDate;
-    }
-
-    public void setDisplayExpirationDate(String displayExpirationDate) {
-	this.displayExpirationDate = displayExpirationDate;
-    }
-
 
     public String getShareUserId() {
         return shareUserId;
