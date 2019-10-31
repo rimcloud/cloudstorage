@@ -22,7 +22,7 @@
 	<sql id="include_SelectListResult">
  		dept_cd, dept_nm, upr_dept_cd, whle_dept_cd, dept_level, opt_yn, sort_sord, modify_dt, modify_uid, create_dt, create_uid
 	</sql>
-
+	
 	<select id="selectList" parameterType="paramDaoVO" resultMap="deptListMap">
 	    SELECT <include refid="include_SelectListResult"/>
 		FROM rim_dept
@@ -51,6 +51,35 @@
 	    SELECT <include refid="include_SelectListResult"/>
 		FROM rim_dept
 		WHERE dept_cd = (SELECT dept_cd FROM rim_emp WHERE emp_id = #{param.empId} )
+    </select>
+    
+    <select id="selectDeptInfo" parameterType="paramDaoVO" resultMap="deptListMap">
+	    SELECT <include refid="include_SelectListResult"/>
+		FROM rim_dept
+		WHERE dept_cd = #{param.deptCd}
+    </select>
+
+    <select id="selectSubDeptList" parameterType="paramDaoVO" resultMap="deptListMap">
+	    SELECT <include refid="include_SelectListResult"/>
+       		, IF( ( SELECT count(1)
+       			      FROM rim_dept AS sub_dept
+       			     WHERE sub_dept.upr_dept_cd = dept.dept_cd
+       			       AND sub_dept.opt_yn = 'Y'
+       			   ) > 0, 'Y', 'N') AS has_sub_dept
+  		FROM rim_dept dept
+ 		WHERE dept.upr_dept_cd = #{param.deptCd}
+ 			<if test='param.includeNoneOp != null and param.includeNoneOp == "N"'>
+ 			AND opt_yn = 'Y'
+ 			</if>
+		ORDER BY sort_sord;
+    </select>
+
+    <select id="selectTopDeptList" resultMap="deptListMap">
+	    SELECT <include refid="include_SelectListResult"/>
+  		FROM rim_dept
+ 		WHERE dept_level = 1
+			AND opt_yn = 'Y'
+		ORDER BY sort_sord;
     </select>
 
 

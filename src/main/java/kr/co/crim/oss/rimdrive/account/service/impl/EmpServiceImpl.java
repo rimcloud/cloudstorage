@@ -37,16 +37,15 @@ public class EmpServiceImpl implements EmpService {
     }
 
     @Override
-    public List<?> getSearchList(String siteCd, String searchId, String searchText) throws Exception {
+    public List<?> getSearchList(String searchId, String searchText) throws Exception {
 	Map<String, Object> paramMap = new HashMap<String, Object>();
-	paramMap.put("siteCd", siteCd);
 	paramMap.put("searchId", searchId);
 	paramMap.put("searchText", searchText);
 	return empDAO.selectSearchList(new ParamDaoVO(paramMap));
     }
 
     @Override
-    public List<?> getSearchListByEmail(String siteCd, String searchText) throws Exception {
+    public List<?> getSearchListByEmail(String searchText) throws Exception {
 	Map<String, Object> paramMap = new HashMap<String, Object>();
 	paramMap.put("email", searchText);
 	return empDAO.selectSearchList(new ParamDaoVO(paramMap));

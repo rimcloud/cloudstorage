@@ -62,11 +62,11 @@ public class EmpController {
 	ReturnVO returnVO = new ReturnVO();
 
 	if( searchType.equals("email")) {
-	    List<?> empList = empService.getSearchListByEmail("", searchText);
+	    List<?> empList = empService.getSearchListByEmail(searchText);
 	    returnVO.setReturnInfo(Constant.COMMOM_RESULT_SUCCESS, MessageSourceHelper.getMessage("common.success.msg"));
 	    model.addAttribute("data", empList); 
 	}else {
-	    List<?> empList = empService.getSearchList("", searchId, searchText);
+	    List<?> empList = empService.getSearchList(searchId, searchText);
 	    returnVO.setReturnInfo(Constant.COMMOM_RESULT_SUCCESS, MessageSourceHelper.getMessage("common.success.msg"));
 	    model.addAttribute("data", empList);
 	}

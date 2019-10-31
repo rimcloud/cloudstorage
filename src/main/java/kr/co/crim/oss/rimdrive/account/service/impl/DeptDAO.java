@@ -14,13 +14,25 @@ public class DeptDAO extends SqlSessionMetaDAO {
     public List<?> selectList(ParamDaoVO paramDaoVO) throws Exception {
    	return sqlSessionMeta.selectList("deptDAO.selectList", paramDaoVO);
     }
-
+    
     public List<?> selectSearchList(ParamDaoVO paramDaoVO) throws Exception {
    	return sqlSessionMeta.selectList("deptDAO.selectSearchList", paramDaoVO);
     }
 
     public DeptVO selectDeptInfoByEmpId(ParamDaoVO paramDaoVO) throws Exception {
    	return (DeptVO)sqlSessionMeta.selectOne("deptDAO.selectDeptInfoByEmpId", paramDaoVO);
+    }
+    
+    public DeptVO selectDeptInfo(ParamDaoVO paramDaoVO) throws Exception {
+   	return sqlSessionMeta.selectOne("deptDAO.selectDeptInfo", paramDaoVO);
+    }  
+
+    public List<?> selectSubDeptList(ParamDaoVO paramDaoVO) throws Exception {
+   	return sqlSessionMeta.selectList("deptDAO.selectSubDeptList", paramDaoVO);
+    }
+
+    public List<?> selectTopDeptList() throws Exception {
+   	return sqlSessionMeta.selectList("deptDAO.selectTopDeptList");
     }
     
 }

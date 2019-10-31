@@ -7,7 +7,6 @@ public class LoginInfoVO implements Serializable {
     private static final long serialVersionUID = -1808768149688844957L;
 
     private String loginid;
-    private String sitecd;
     private String status;
     private String message;
     
@@ -17,13 +16,6 @@ public class LoginInfoVO implements Serializable {
     }
     public void setLoginid(String loginid) {
         this.loginid = loginid;
-    }
-    
-    public String getSitecd() {
-        return sitecd;
-    }
-    public void setSitecd(String sitecd) {
-        this.sitecd = sitecd;
     }
     
     public String getStatus() {

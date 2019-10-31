@@ -9,15 +9,15 @@ import kr.co.crim.oss.rimdrive.common.service.SessionVO;
 
 public interface LoginService {
 
-    public boolean checkLoginForWebDav(String userId, String password,String siteCd) throws Exception;
+    public boolean checkLoginForWebDav(String userId, String password) throws Exception;
 
-    public boolean checkLogin(String userId, String password,String siteCd) throws Exception;
+    public boolean checkLogin(String userId, String password) throws Exception;
 
-    public boolean checkLogin(String userId, String password,String siteCd, String ip, String mac) throws Exception;
+    public boolean checkLogin(String userId, String password, String ip, String mac) throws Exception;
 
-    public String checkLoginGetUserId(String userId, String password,String siteCd, String ip, String mac) throws Exception;
+    public String checkLoginGetUserId(String userId, String password, String ip, String mac) throws Exception;
 
-    public LoginInfoVO checkLoginGetLoginInfo(String userId, String password,String siteCd, String ip, String mac) throws Exception;
+    public LoginInfoVO checkLoginGetLoginInfo(String userId, String password, String ip, String mac) throws Exception;
     
     public boolean setLogin(String userId) throws Exception ;
 
@@ -27,7 +27,7 @@ public interface LoginService {
 
     public SessionVO getUserLoginInfo(String userId) throws Exception;
     
-    public SessionVO getUserLoginId(String userId, String siteCd) throws Exception;
+    public SessionVO getUserLoginId(String userId) throws Exception;
 
     public List<?> getListByEmpNm(String empNm) throws Exception;
 }

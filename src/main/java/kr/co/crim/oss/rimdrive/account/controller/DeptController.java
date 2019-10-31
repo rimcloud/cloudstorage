@@ -44,7 +44,7 @@ public class DeptController {
 
 	ReturnVO returnVO = new ReturnVO();
 
-	List<?> deptList = deptService.getSearchList("", searchId, searchText);
+	List<?> deptList = deptService.getSearchList(searchId, searchText);
 
 	returnVO.setReturnInfo(Constant.COMMOM_RESULT_SUCCESS, MessageSourceHelper.getMessage("common.success.msg"));
 

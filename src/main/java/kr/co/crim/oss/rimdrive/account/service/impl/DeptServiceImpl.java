@@ -24,12 +24,11 @@ public class DeptServiceImpl implements DeptService {
 
 	return deptDAO.selectList(new ParamDaoVO(paramMap));
     }
-
+    
     @Override
-    public List<?> getSearchList(String siteCd, String searchId, String searchText) throws Exception {
+    public List<?> getSearchList(String searchId, String searchText) throws Exception {
 	Map<String, Object> paramMap = new HashMap<String, Object>();
-
-	paramMap.put("siteCd", siteCd);
+	
 	paramMap.put("searchId", searchId);
 	paramMap.put("searchText", searchText);
 
@@ -44,4 +43,30 @@ public class DeptServiceImpl implements DeptService {
 	return deptDAO.selectDeptInfoByEmpId(new ParamDaoVO(paramMap));
     }
     
+    @Override
+    public DeptVO getDeptVO(String deptCd) throws Exception {
+	
+	Map<String, Object> paramMap = new HashMap<String, Object>();
+	paramMap.put("deptCd", deptCd);
+	
+	return deptDAO.selectDeptInfo(new ParamDaoVO(paramMap));
+    }
+
+    @Override
+    public List<?> getSubDeptList(String deptCd, boolean includeNoneOp) throws Exception {
+
+	Map<String, Object> paramMap = new HashMap<String, Object>();
+	paramMap.put("deptCd", deptCd);
+	if (includeNoneOp)
+	    paramMap.put("includeNoneOp", "Y");
+	else
+	    paramMap.put("includeNoneOp", "N");
+	return deptDAO.selectSubDeptList(new ParamDaoVO(paramMap));
+    }
+
+    @Override
+    public List<?> getTopDeptList() throws Exception {
+
+	return deptDAO.selectTopDeptList();
+    }
 }

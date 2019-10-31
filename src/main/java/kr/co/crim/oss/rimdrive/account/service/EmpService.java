@@ -7,9 +7,9 @@ public interface EmpService {
 
     public List<?> getListByDeptCd(String deptCd, Map<String, Object> pagingMap) throws Exception;
 
-    public List<?> getSearchList(String siteCd, String searchId, String searchText) throws Exception;
+    public List<?> getSearchList(String searchId, String searchText) throws Exception;
 
-    public List<?> getSearchListByEmail(String siteCd, String searchText) throws Exception;
+    public List<?> getSearchListByEmail(String searchText) throws Exception;
 
     public EmpVO getEmpInfoByEmpId(String empId) throws Exception;
 

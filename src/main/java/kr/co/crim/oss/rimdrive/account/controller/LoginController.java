@@ -32,7 +32,7 @@ public class LoginController {
 	if (StringUtils.isAnyBlank(userId, password)) {
 	    returnVO.setReturnInfo(Constant.COMMOM_RESULT_FAIL, MessageSourceHelper.getMessage("common.invalid.msg"));
 	} else {
-	    boolean checkLoginValue = loginService.checkLogin(userId, password, "");
+	    boolean checkLoginValue = loginService.checkLogin(userId, password);
 	    if ( checkLoginValue ) {
 		returnVO.setReturnInfo(Constant.COMMOM_RESULT_SUCCESS, MessageSourceHelper.getMessage("success.login.msg"));
 	    } else {

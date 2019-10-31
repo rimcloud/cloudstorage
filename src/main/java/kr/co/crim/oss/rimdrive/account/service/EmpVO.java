@@ -28,7 +28,6 @@ public class EmpVO implements Serializable {
     private String deptCd;
     private String deptNm;
     private int quota;
-    private String siteCd;
 
     public String getEmpId() {
 	return empId;
@@ -180,14 +179,6 @@ public class EmpVO implements Serializable {
 
     public void setQuota(int quota) {
 	this.quota = quota;
-    }
-
-    public String getSiteCd() {
-        return siteCd;
-    }
-
-    public void setSiteCd(String siteCd) {
-        this.siteCd = siteCd;
     }
 
     @Override

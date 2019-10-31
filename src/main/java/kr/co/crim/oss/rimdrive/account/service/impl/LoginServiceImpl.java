@@ -50,49 +50,49 @@ public class LoginServiceImpl implements LoginService {
     private FilesValidatorService filesValidatorService;
 
     @Override
-    public boolean checkLoginForWebDav(String userId, String password, String siteCd) throws Exception {
+    public boolean checkLoginForWebDav(String userId, String password) throws Exception {
 	String ip = "";
 	String mac = "";
-	return checkLogin(userId, password, siteCd, ip, mac);
+	return checkLogin(userId, password, ip, mac);
     }
 
     @Override
-    public boolean checkLogin(String userId, String password, String siteCd) throws Exception {
+    public boolean checkLogin(String userId, String password) throws Exception {
 	String ip = "";
 	String mac = "";
-	return checkLogin(userId, password, siteCd, ip, mac);
+	return checkLogin(userId, password, ip, mac);
 
     }
 
     @Override
-    public boolean checkLogin(String userId, String password, String siteCd, String ip, String mac) throws Exception {
+    public boolean checkLogin(String userId, String password, String ip, String mac) throws Exception {
 	boolean isAuthenticated = false;
 
-	isAuthenticated = checkLoginLocal(userId, password, siteCd, ip, mac);
+	isAuthenticated = checkLoginLocal(userId, password, ip, mac);
 
 	return isAuthenticated;
 
     }
 
     @Override
-    public String checkLoginGetUserId(String userId, String password, String siteCd, String ip, String mac) throws Exception {
+    public String checkLoginGetUserId(String userId, String password, String ip, String mac) throws Exception {
 	String loginUserId = "";
 
-	loginUserId = checkLoginLocalGetUserId(userId, password, siteCd, ip, mac);
+	loginUserId = checkLoginLocalGetUserId(userId, password, ip, mac);
 
 	return loginUserId;
     }
 
     @Override
-    public LoginInfoVO checkLoginGetLoginInfo(String userId, String password, String siteCd, String ip, String mac) throws Exception {
+    public LoginInfoVO checkLoginGetLoginInfo(String userId, String password, String ip, String mac) throws Exception {
 
 	LoginInfoVO loginInfo = null;
 
 	loginInfo = new LoginInfoVO();
 
-	if (getUserLoginId(userId, siteCd) != null) {
+	if (getUserLoginId(userId) != null) {
 
-	    String loginUserId = checkLoginLocalGetUserId(userId, password, siteCd, ip, mac);
+	    String loginUserId = checkLoginLocalGetUserId(userId, password, ip, mac);
 
 	    if (StringUtils.isNoneBlank(loginUserId)) {
 		loginInfo.setStatus("true");
@@ -109,12 +109,11 @@ public class LoginServiceImpl implements LoginService {
 	return loginInfo;
     }
 
-    private boolean checkLoginLocal(String userId, String password, String siteCd, String ip, String mac) throws Exception {
+    private boolean checkLoginLocal(String userId, String password, String ip, String mac) throws Exception {
 
 	HashMap<String, Object> paramMap = new HashMap<String, Object>();
 	paramMap.put("userId", userId);
 	paramMap.put("password", password);
-	paramMap.put("siteCd", siteCd);
 
 	LoginVO loginVO = loginDAO.selectCheckLogin(new ParamDaoVO(paramMap));
 	
@@ -126,13 +125,12 @@ public class LoginServiceImpl implements LoginService {
 
     }
 
-    private String checkLoginLocalGetUserId(String userId, String password, String siteCd, String ip, String mac) throws Exception {
+    private String checkLoginLocalGetUserId(String userId, String password, String ip, String mac) throws Exception {
 
 	String returnValue = "";
 	HashMap<String, Object> paramMap = new HashMap<String, Object>();
 	paramMap.put("userId", userId);
 	paramMap.put("password", password);
-	paramMap.put("siteCd", siteCd);
 
 	LoginVO loginVO = loginDAO.selectCheckLogin(new ParamDaoVO(paramMap));
 	if (loginVO == null || loginVO.getUserId().equals("")) {
@@ -176,7 +174,6 @@ public class LoginServiceImpl implements LoginService {
     public void setLogout(HttpServletRequest req) throws Exception {
 
 	loginInfoStoreService.clearLoginInfo();
-
     }
 
     @Override
@@ -185,7 +182,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public SessionVO getUserLoginId(String userId, String siteCd) throws Exception {
+    public SessionVO getUserLoginId(String userId) throws Exception {
 
 	HashMap<String, Object> paramMap = new HashMap<String, Object>();
 	paramMap.put("userId", userId);
