@@ -1,6 +1,7 @@
 package kr.co.crim.oss.rimdrive.common.utils;
 
 import java.io.File;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -17,7 +18,63 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class FileUtil {
 
+    static final String REGEX_POSTFIX_SERIAL_FILE = " \\(([" + Constant.FILE_COPY_SIBLING_INDEX_START + "-9]|[1-9]\\d+)(\\)(\\.\\w+)?)$";
+    static final String REGEX_POSTFIX_SERIAL_FOLDER = " \\(([" + Constant.FILE_COPY_SIBLING_INDEX_START + "-9]|[1-9]\\d+)(\\))$";
+    static final String REGEX_POSTFIX_ONLY_FILE = "((\\.\\w+)?)$";
+    static final String REGEX_POSTFIX_ONLY_FOLDER = "$";
+    static final String REGEX_EXT = "(\\.\\w+)$";
+
     public static Properties props = new Properties();
+
+
+    public static boolean validateFileName(String name) {
+
+	boolean result = false;
+
+	if (name.trim().length() > 0) {
+	    String charProhibited = "[\\\\/:*?\"<>|]";
+	    String nameProhibited = "^((CON)|(PRN)|(AUX)|(NUL)|(COM[1-9])|(LPT[1-9]))$";
+	    Pattern pChar = Pattern.compile(charProhibited, Pattern.CASE_INSENSITIVE);
+	    Pattern pName = Pattern.compile(nameProhibited, Pattern.CASE_INSENSITIVE);
+	    Matcher mChar = pChar.matcher(name);
+	    name = StringUtils.substringBefore(name, ".");
+	    Matcher mName = pName.matcher(name);
+
+	    result = !mChar.find() && !mName.matches();
+	}
+
+	return result;
+    }
+
+    public static String digestPathHash(String path) {
+	String rtnMD5 = "";
+
+	try {
+	    MessageDigest md = MessageDigest.getInstance("MD5");
+	    md.update(path.getBytes("UTF-8"));
+	    byte byteData[] = md.digest();
+	    StringBuffer sb = new StringBuffer();
+
+	    for (byte byteTmp : byteData) {
+		sb.append(Integer.toString((byteTmp & 0xff) + 0x100, 16).substring(1));
+
+	    }
+	    rtnMD5 = sb.toString();
+	} catch (Exception e) {
+	    rtnMD5 = "";
+	}
+	return rtnMD5;
+    }
+
+    public static String getFirstPath(String path) throws Exception {
+	String trimPath = FileUtil.trimFirstSlash(path);
+	String[] arrayPath = trimPath.split(Constant.FILE_SEPARATOR);
+
+	if (arrayPath.length > 0)
+	    return arrayPath[0];
+
+	return path;
+    }
 
     public static String addFirstSplashPath(String path) throws Exception {
 	if (StringUtils.isBlank(path) || path.equals(Constant.FILE_SEPARATOR)) {
@@ -34,6 +91,21 @@ public class FileUtil {
 	return path;
     }
 
+    public static String addLastSplashPath(String path) throws Exception {
+	if (StringUtils.isBlank(path) || path.equals(Constant.FILE_SEPARATOR)) {
+	    return Constant.FILE_SEPARATOR;
+	}
+	int len = path.length();
+	if (len == 0) {
+	    return Constant.FILE_SEPARATOR;
+	}
+	char lastChar = path.charAt(len - 1);
+	if (lastChar != '/') {
+	    return path + Constant.FILE_SEPARATOR;
+	}
+	return path;
+    }
+
     public static String trimFirstSlash(String path) {
 	int len = path.length();
 	if (len == 0) {
@@ -45,6 +117,19 @@ public class FileUtil {
 	}
 
 	return path.substring(1, len);
+    }
+
+    public static String trimLastSlash(String path) {
+	int len = path.length();
+	if (len == 0) {
+	    return path;
+	}
+	char lastChar = path.charAt(len - 1);
+	if (lastChar != '/') {
+	    return path;
+	}
+
+	return path.substring(0, len - 1);
     }
 
     public static List<String> getParentsPath(String path) {
@@ -180,6 +265,16 @@ public class FileUtil {
 
 	Date date = new Date();
 	long unixTime = date.getTime() / 1000;
+
+	return unixTime;
+    }
+
+    public static long getTimeStamp(Date date) {
+
+	long unixTime = 0;
+
+	if (date != null)
+	    unixTime = date.getTime() / 1000;
 
 	return unixTime;
     }

@@ -62,9 +62,6 @@ public class Constant {
     public static final String FAIL_API = "/common/error/fail.do";
     public static final String STORAGE_ACCESS_TYPE_PERSONAL = "PA";
     public static final String STORAGE_ACCESS_TYPE_PERSONAL_SHARINGIN = "PS";
-    public static final String STORAGE_ACCESS_TYPE_GROUP = "GA";
-    public static final String STORAGE_ACCESS_TYPE_GROUP_SHARINGIN = "GS";
-    public static final String STORAGE_ACCESS_TYPE_GROUP_DOWNLOAD_LOCK= "GL";
     public static final String STORAGE_SERVICES_TYPE_N = "N";
     public static final String DESKTOP_STATETP_LOGIN = "0";
     public static final String DESKTOP_STATETP_LOGOUT = "1";
@@ -74,8 +71,6 @@ public class Constant {
     public static final String DESKTOP_STATETP_DUP_LOGOUT = "5";
     public static final String STORAGE_ACCESS_TYPE_PERSONAL_TEXT = MessageSourceHelper.getMessage("label.storage.personal");
     public static final String STORAGE_ACCESS_TYPE_PERSONAL_SHARINGIN_TEXT = MessageSourceHelper.getMessage("label.files.sharingin");
-    public static final String STORAGE_ACCESS_TYPE_GROUP_TEXT = MessageSourceHelper.getMessage("label.storage.group");
-    public static final String STORAGE_ACCESS_TYPE_GROUP_SHARINGIN_TEXT = MessageSourceHelper.getMessage("label.files.sharingin");
     public static final String STORAGE_ACCESS_TYPE_ALL_FILES = MessageSourceHelper.getMessage("label.files.files");
     public static final String STORAGE_ACCESS_TYPE_SHARINGIN_FILES = MessageSourceHelper.getMessage("label.files.sharingin");
     public static final String OFFICE_ACCESS_TYPE_WEBOFFICE = "W";

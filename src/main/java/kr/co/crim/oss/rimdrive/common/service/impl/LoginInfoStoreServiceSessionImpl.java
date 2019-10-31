@@ -4,8 +4,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -13,12 +11,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import kr.co.crim.oss.rimdrive.common.service.LoginInfoStoreService;
 import kr.co.crim.oss.rimdrive.common.service.SessionVO;
 import kr.co.crim.oss.rimdrive.common.utils.Constant;
-import kr.co.crim.oss.rimdrive.common.utils.LoginInfoHelper;
 import kr.co.crim.oss.rimdrive.common.utils.PropertyConfigurerHelper;
 
 public class LoginInfoStoreServiceSessionImpl implements LoginInfoStoreService {
-
-    private static final Logger logger = LoggerFactory.getLogger(LoginInfoStoreServiceSessionImpl.class);
 
     @Override
     public SessionVO getLoginInfo() throws Exception {
@@ -81,7 +76,6 @@ public class LoginInfoStoreServiceSessionImpl implements LoginInfoStoreService {
 	HttpSession session = request.getSession(false);
 
 	if (session != null) {
-	    String userId = LoginInfoHelper.getUserId();
 	    session.removeAttribute("sessionVO");
 	}
 

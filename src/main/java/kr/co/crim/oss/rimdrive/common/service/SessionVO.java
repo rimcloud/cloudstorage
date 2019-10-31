@@ -12,7 +12,6 @@ public class SessionVO implements Serializable {
     private String storageId;
     private String userNm;
     private String authId;
-    private String siteCd;
     private String deptCd;
     private String ssoToken;
     private String checkDate;
@@ -51,14 +50,6 @@ public class SessionVO implements Serializable {
 
     public void setAuthId(String authId) {
 	this.authId = authId;
-    }
-
-    public String getSiteCd() {
-	return siteCd;
-    }
-
-    public void setSiteCd(String siteCd) {
-	this.siteCd = siteCd;
     }
 
     public String getDeptCd() {
