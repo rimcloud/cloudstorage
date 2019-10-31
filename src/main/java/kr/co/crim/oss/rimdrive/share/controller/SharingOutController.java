@@ -9,8 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,8 +33,6 @@ import kr.co.crim.oss.rimdrive.share.service.SharingOutService;
 @Controller
 @RequestMapping(value = "/so", method = { RequestMethod.GET, RequestMethod.POST })
 public class SharingOutController {
-
-    private static final Logger logger = LoggerFactory.getLogger(SharingOutController.class);
 
     @Resource(name = "filesService")
     private FilesService filesService;
@@ -155,9 +151,6 @@ public class SharingOutController {
 
 	String targetStorageId = req.getParameter("rim_sid");
 	String strFileId = req.getParameter("rim_fid");
-	String accessPw = req.getParameter("rim_access_pw");
-	String expireDate = req.getParameter("rim_expire_date");
-	String message = req.getParameter("rim_message");
 	String insertTarget = req.getParameter("rim_insert_target");
 
 	ReturnVO returnVO = new ReturnVO();
@@ -186,7 +179,7 @@ public class SharingOutController {
 		Map<String, Object> paramMap = new HashMap<String, Object>();
 		paramMap.put("insertTarget",  listInsertTarget);
 
-		if (sharingOutService.addShareAll(targetStorageId, fileId, userId, accessPw, expireDate, message, paramMap) > 0) {
+		if (sharingOutService.addShareAll(targetStorageId, fileId, userId, paramMap) > 0) {
 
         	    ShareVO shareVO = sharingOutService.getShare(targetStorageId, fileId, userId);
         	    Map<String, Object> returnDataMap = new HashMap<String, Object>();
@@ -299,7 +292,7 @@ public class SharingOutController {
 
 	    if (!paramMap.isEmpty()) {
 
-		if (sharingOutService.updateShareAll(userId, shareId, "", "", "", paramMap) > 0) {
+		if (sharingOutService.updateShareAll(userId, shareId, paramMap) > 0) {
 
 		    ShareVO shareVO = sharingOutService.getShareByShareId(shareId);
 

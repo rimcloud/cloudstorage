@@ -15,11 +15,13 @@ public interface SharingOutService {
 
     public List<?> getShareTargetListByShareId(long shareId) throws Exception;
 
-    public int addShareAll(String storageId, long fileId, String userId, String accessPw,String expireDate,String message, Map<String, Object> paramMap)throws Exception;
+    public int addShareAll(String storageId, long fileId, String userId, Map<String, Object> paramMap)throws Exception;
 
     public int deleteShareAll(String userId, long shareId) throws Exception;
 
-    public int updateShareAll(String userId, long shareId,String accessPw,String expireDate,String message, Map<String, Object> paramMap) throws Exception;
+    public int updateShareAll(String userId, long shareId, Map<String, Object> paramMap) throws Exception;
+    
+    public int updateShareAllByVD(String userId, long shareId, Map<String, Object> paramMap) throws Exception;
 
 }
 

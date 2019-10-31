@@ -66,7 +66,7 @@ public class SharingOutServiceImpl implements SharingOutService {
 	return sharingOutDAO.selectShareTargetList(new ParamDaoVO(paramMap));
     }
 
-    private int addShare(String storageId, long fileId, String userId, String accessPw, String expireDate, String message) throws Exception {
+    private int addShare(String storageId, long fileId, String userId) throws Exception {
 	Map<String, Object> paramMap = new HashMap<String, Object>();
 	paramMap.put("storageId", storageId);
 	paramMap.put("fileId", fileId);
@@ -84,10 +84,10 @@ public class SharingOutServiceImpl implements SharingOutService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = { Exception.class })
-    public int addShareAll(String storageId, long fileId, String userId, String accessPw, String expireDate, String message, Map<String, Object> paramMap) throws Exception {
+    public int addShareAll(String storageId, long fileId, String userId, Map<String, Object> paramMap) throws Exception {
 	int retValue = 0;
 
-	retValue = this.addShare(storageId, fileId, userId, accessPw, expireDate, message);
+	retValue = this.addShare(storageId, fileId, userId);
 	if (retValue > 0) {
 	    ShareVO shareVO = this.getShare(storageId, fileId, userId);
 
@@ -119,7 +119,7 @@ public class SharingOutServiceImpl implements SharingOutService {
 	return this.deleteShare(shareId);
     }
 
-    private int updateShareTarget(String userId, long shareId,String permissions, Object updateTarget ) throws Exception {
+    private int updateShareTarget(String userId, long shareId,String permissions, Object updateTarget) throws Exception {
 	Map<String, Object> paramMap = new HashMap<String, Object>();
 	paramMap.put("userId", userId);
 	paramMap.put("shareId", shareId);
@@ -136,7 +136,7 @@ public class SharingOutServiceImpl implements SharingOutService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = { Exception.class })
-    public int updateShareAll(String userId, long shareId, String accessPw, String expireDate, String message, Map<String, Object> paramMap) throws Exception {
+    public int updateShareAll(String userId, long shareId, Map<String, Object> paramMap) throws Exception {
 
 	if (!ObjectUtils.isEmpty(paramMap.get("insertTarget"))) {
 	    this.addShareTarget(userId, shareId, paramMap.get("insertTarget"));
@@ -153,6 +153,31 @@ public class SharingOutServiceImpl implements SharingOutService {
 	if (!ObjectUtils.isEmpty(paramMap.get("deleteTarget"))) {
 	    this.deleteShareTarget(paramMap.get("deleteTarget"));
 	}
+
+	return 1;
+    }
+    
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = { Exception.class })
+    public int updateShareAllByVD(String userId, long shareId, Map<String, Object> paramMap) throws Exception {
+	
+	if (!ObjectUtils.isEmpty(paramMap.get("deleteTarget"))) {
+	    this.deleteShareTarget(paramMap.get("deleteTarget"));
+	}
+
+	if (!ObjectUtils.isEmpty(paramMap.get("insertTarget"))) {
+	    this.addShareTarget(userId, shareId, paramMap.get("insertTarget"));
+	}
+
+	/*
+	if (!ObjectUtils.isEmpty(paramMap.get("updateTargetR"))) {
+	    this.updateShareTarget(userId, shareId, Constant.AUTH_TYPE_READ, paramMap.get("updateTargetR"));
+	}
+
+	if (!ObjectUtils.isEmpty(paramMap.get("updateTargetW"))) {
+	    this.updateShareTarget(userId, shareId, Constant.AUTH_TYPE_WRITE, paramMap.get("updateTargetW"));
+	}
+	*/
 
 	return 1;
     }
