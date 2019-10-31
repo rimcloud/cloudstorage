@@ -104,7 +104,6 @@ public class FilesController {
     public String getFolderSubInfo(HttpServletRequest req, HttpServletResponse res, ModelMap model) throws Exception {
 
 	String storageId = LoginInfoHelper.getStorageId();
-	String userId = LoginInfoHelper.getUserId();
 
 	String strFileId = req.getParameter("rim_fid");
 	long fileId = CommonUtils.parseLong(strFileId);
