@@ -294,7 +294,7 @@
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
-			<version>1.4.11</version>
+			<version>1.4.15</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.webjars.bower/crypto-js -->
